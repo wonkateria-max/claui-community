@@ -47,6 +47,16 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'){var m=docum
 
   const list = document.getElementById('pick-list');
   if(list){
+    const extras = ['ClauiPaladesisyon Readings','Claui Unfiltered'];
+    const currentNames = [...list.querySelectorAll('li')].map(li => li.querySelector('span')?.textContent.replace(/^\s*\d+\s*/, '').trim());
+    extras.forEach(name => {
+      if(currentNames.includes(name)) return;
+      const li = document.createElement('li');
+      li.innerHTML = `<span><b>${list.children.length+1}</b> ${name}</span><button class="vote" type="button">＋ Vote</button>`;
+      list.appendChild(li);
+      currentNames.push(name);
+    });
+
     const items = [...list.querySelectorAll('li')];
     const names = items.map(li => li.querySelector('span').textContent.replace(/^\s*\d+\s*/, '').trim());
     let counts = {};
