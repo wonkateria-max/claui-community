@@ -3,6 +3,11 @@
   aboutStyles.rel = 'stylesheet';
   aboutStyles.href = 'about-clean.css';
   document.head.appendChild(aboutStyles);
+
+  const pollStyles = document.createElement('link');
+  pollStyles.rel = 'stylesheet';
+  pollStyles.href = 'poll.css';
+  document.head.appendChild(pollStyles);
 })();
 
 document.addEventListener('keydown',function(e){if(e.key==='Escape'){var m=document.getElementById('supportDesktopModal');if(m){m.classList.remove('is-open');document.body.style.overflow='';}}});
@@ -40,7 +45,81 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'){var m=docum
   tabs.forEach(t=>t.addEventListener('click',()=>select(t.dataset.type)));
   if(form){form.addEventListener('submit',e=>{e.preventDefault();if(!primaryInput.value.trim())return;success.textContent='Prototype received — backend connection comes next.';});}
 
-  document.querySelectorAll('.vote').forEach(btn=>btn.addEventListener('click',()=>{
-    btn.classList.toggle('voted'); btn.textContent=btn.classList.contains('voted')?'✓ Voted':'＋ Vote';
-  }));
+  const list = document.getElementById('pick-list');
+  if(list){
+    const items = [...list.querySelectorAll('li')];
+    const names = items.map(li => li.querySelector('span').textContent.replace(/^\s*\d+\s*/, '').trim());
+    let counts = {};
+    try{ counts = JSON.parse(localStorage.getItem('claui-weekly-vote-counts') || '{}') || {}; }catch(_){ counts = {}; }
+    names.forEach(name => { if(!Number.isFinite(counts[name])) counts[name] = 0; });
+    let selected = localStorage.getItem('claui-weekly-vote') || '';
+
+    const summary = document.createElement('div');
+    summary.className = 'poll-summary';
+    summary.innerHTML = '<span>LIVE COMMUNITY POLL</span><strong id="poll-leader">No votes yet</strong>';
+    list.before(summary);
+
+    items.forEach((li,index) => {
+      const name = names[index];
+      li.dataset.game = name;
+      li.innerHTML = `
+        <div class="poll-row">
+          <div class="poll-name"><b>${index+1}</b><span>${name}</span><em class="leader-badge">Leading</em></div>
+          <div class="poll-actions"><small class="vote-count">0 votes</small><button class="vote" type="button">＋ Vote</button></div>
+        </div>
+        <div class="poll-track"><i class="poll-fill"></i></div>`;
+    });
+
+    const note = document.createElement('p');
+    note.className = 'poll-note';
+    note.textContent = 'One vote per browser for now. Shared community totals will go live when the backend is connected.';
+    list.after(note);
+
+    const renderPoll = () => {
+      const total = names.reduce((sum,name)=>sum+(counts[name]||0),0);
+      const max = Math.max(0,...names.map(name=>counts[name]||0));
+      const leaders = max > 0 ? names.filter(name=>(counts[name]||0)===max) : [];
+      const leaderText = document.getElementById('poll-leader');
+      if(leaderText){
+        leaderText.textContent = !leaders.length ? 'No votes yet' : leaders.length === 1 ? `Leading: ${leaders[0]}` : `Tie: ${leaders.join(' · ')}`;
+      }
+      items.forEach(li => {
+        const name = li.dataset.game;
+        const count = counts[name] || 0;
+        const percent = total ? Math.round((count/total)*100) : 0;
+        li.classList.toggle('is-leading', max>0 && count===max);
+        const countEl = li.querySelector('.vote-count');
+        const fill = li.querySelector('.poll-fill');
+        const btn = li.querySelector('.vote');
+        if(countEl) countEl.textContent = `${count} ${count===1?'vote':'votes'}`;
+        if(fill) fill.style.width = `${percent}%`;
+        if(btn){
+          const voted = selected===name;
+          btn.classList.toggle('voted',voted);
+          btn.textContent = voted ? '✓ Voted' : '＋ Vote';
+        }
+      });
+    };
+
+    items.forEach(li => {
+      const btn = li.querySelector('.vote');
+      btn.addEventListener('click',()=>{
+        const name = li.dataset.game;
+        if(selected===name){
+          counts[name] = Math.max(0,(counts[name]||0)-1);
+          selected = '';
+          localStorage.removeItem('claui-weekly-vote');
+        }else{
+          if(selected && names.includes(selected)) counts[selected] = Math.max(0,(counts[selected]||0)-1);
+          counts[name] = (counts[name]||0)+1;
+          selected = name;
+          localStorage.setItem('claui-weekly-vote',selected);
+        }
+        localStorage.setItem('claui-weekly-vote-counts',JSON.stringify(counts));
+        renderPoll();
+      });
+    });
+
+    renderPoll();
+  }
 })();
