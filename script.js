@@ -1,3 +1,10 @@
+(() => {
+  const aboutStyles = document.createElement('link');
+  aboutStyles.rel = 'stylesheet';
+  aboutStyles.href = 'about-clean.css';
+  document.head.appendChild(aboutStyles);
+})();
+
 document.addEventListener('keydown',function(e){if(e.key==='Escape'){var m=document.getElementById('supportDesktopModal');if(m){m.classList.remove('is-open');document.body.style.overflow='';}}});
 
 (() => {
