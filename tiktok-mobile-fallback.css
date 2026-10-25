@@ -1,29 +1,216 @@
-@media (max-width: 900px) {
-  /* Mobile: use TikTok's own embed cleanly. No custom poster/text layered over it. */
-  .video-card .tiktok-embed-frame,
-  .featured-player .tiktok-embed-frame {
-    display: block !important;
-    position: absolute !important;
-    inset: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    border: 0 !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-    pointer-events: auto !important;
-    z-index: 3 !important;
-    background: #000 !important;
-  }
+/* Content refresh prototype: replaces fragile TikTok embeds with low-maintenance creator/community modules. */
+.content .section-head h2,
+.featured > .shell > h2 {
+  font-size: 0 !important;
+}
+.content .section-head h2::after {
+  content: "Tonight at Claui";
+  font-size: clamp(2rem,4vw,3.8rem);
+  line-height: 1;
+}
+.featured > .shell > h2::after {
+  content: "Featured Chaos";
+  font-size: clamp(2rem,4vw,3.8rem);
+  line-height: 1;
+}
+.content .section-head a {
+  font-size: 0 !important;
+}
+.content .section-head a::after {
+  content: "@clawiwawi ↗";
+  font-size: .85rem;
+}
 
-  .video-card .video-poster,
-  .featured-player .video-poster {
-    display: none !important;
-  }
+/* No third-party video UI in these sections. */
+.content .tiktok-embed-frame,
+.featured .tiktok-embed-frame {
+  display: none !important;
+}
 
-  .video-card .video-frame,
-  .featured-player .tiktok-shell {
-    position: relative !important;
-    overflow: hidden !important;
-    background: #000 !important;
+.content .video-row {
+  grid-template-columns: repeat(3,minmax(0,1fr));
+  gap: 14px;
+  overflow: visible;
+}
+.content .video-card {
+  position: relative;
+  min-height: 300px;
+  aspect-ratio: 4/3;
+  border-radius: 22px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 78% 18%,rgba(239,35,60,.15),transparent 31%),
+    linear-gradient(180deg,rgba(255,255,255,.018),transparent 48%),
+    #0c0c10;
+  border: 1px solid rgba(255,255,255,.10);
+}
+.content .video-card::before {
+  position: absolute;
+  left: 24px;
+  top: 22px;
+  z-index: 4;
+  font-size: .68rem;
+  letter-spacing: .20em;
+  color: #8b8b96;
+  font-weight: 800;
+}
+.content .video-card:nth-child(1)::before { content: "LIVE TONIGHT"; }
+.content .video-card:nth-child(2)::before { content: "COMMUNITY DECIDES"; }
+.content .video-card:nth-child(3)::before { content: "DROPBOX OPEN"; }
+
+.content .video-poster {
+  display: block !important;
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 2 !important;
+  padding: 0 !important;
+  background: none !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: none !important;
+}
+.content .video-poster > * { display: none !important; }
+.content .video-poster::before,
+.content .video-poster::after {
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  z-index: 3;
+  white-space: pre-line;
+}
+.content .video-poster::before {
+  bottom: 68px;
+  color: #f3f1ec;
+  font-size: clamp(1.7rem,2.4vw,2.7rem);
+  line-height: .98;
+  letter-spacing: -.045em;
+  font-weight: 850;
+}
+.content .video-poster::after {
+  bottom: 24px;
+  color: #777782;
+  font-size: .78rem;
+  line-height: 1.45;
+  max-width: 90%;
+}
+.content .video-card:nth-child(1) .video-poster::before { content: "12:00 AM"; }
+.content .video-card:nth-child(1) .video-poster::after { content: "TikTok live · games, stories & after-midnight chaos"; }
+.content .video-card:nth-child(2) .video-poster::before { content: "This week’s\A picks"; }
+.content .video-card:nth-child(2) .video-poster::after { content: "The community poll decides what Claui plays next."; }
+.content .video-card:nth-child(3) .video-poster::before { content: "Stories\A wanted"; }
+.content .video-card:nth-child(3) .video-poster::after { content: "Game requests · content ideas · ClauiPaladesisyon stories"; }
+
+.content .video-card::after {
+  content: "";
+  position: absolute;
+  right: 24px;
+  top: 24px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ef233c;
+  box-shadow: 0 0 0 9px rgba(239,35,60,.08);
+}
+
+/* Featured Chaos: one pinned moment, intentionally not a second TikTok feed. */
+.featured {
+  padding: 76px 0;
+}
+.featured-grid {
+  grid-template-columns: minmax(320px,.92fr) 1.08fr;
+  gap: 46px;
+}
+.featured-player {
+  position: relative;
+  aspect-ratio: 4/3;
+  min-height: 360px;
+  overflow: hidden;
+  border-radius: 24px;
+  border: 1px solid rgba(255,255,255,.11);
+  background:
+    radial-gradient(circle at 78% 20%,rgba(239,35,60,.28),transparent 30%),
+    radial-gradient(circle at 16% 78%,rgba(120,16,26,.20),transparent 35%),
+    linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px),
+    #0a0a0d;
+  background-size: auto,auto,44px 44px,44px 44px,auto;
+}
+.featured-player .tiktok-shell,
+.featured-player .video-poster {
+  display: none !important;
+}
+.featured-player::before {
+  content: "PINNED THIS WEEK";
+  position: absolute;
+  left: 28px;
+  top: 26px;
+  color: #ef233c;
+  font-size: .68rem;
+  font-weight: 800;
+  letter-spacing: .22em;
+}
+.featured-player::after {
+  content: "one bad decision.\A one whole live.";
+  position: absolute;
+  left: 28px;
+  right: 28px;
+  bottom: 30px;
+  white-space: pre-line;
+  color: #f3f1ec;
+  font-size: clamp(2.2rem,4.7vw,4.8rem);
+  line-height: .88;
+  letter-spacing: -.065em;
+  font-weight: 900;
+}
+.featured-copy .mini-label {
+  font-size: 0 !important;
+}
+.featured-copy .mini-label::after {
+  content: "FEATURED CHAOS · CURRENT PIN";
+  font-size: .68rem;
+  letter-spacing: .22em;
+}
+.featured-copy .numbers span:nth-child(1) b { font-size: 0; }
+.featured-copy .numbers span:nth-child(1) b::after { content: "PINNED"; font-size: 1.1rem; }
+.featured-copy .numbers span:nth-child(1) small { font-size: 0; }
+.featured-copy .numbers span:nth-child(1) small::after { content: "leave it up until a better moment happens"; font-size: .72rem; }
+.featured-copy .numbers span:nth-child(2) b { font-size: 0; }
+.featured-copy .numbers span:nth-child(2) b::after { content: "WEEKLY"; font-size: 1.1rem; }
+.featured-copy .numbers span:nth-child(2) small { font-size: 0; }
+.featured-copy .numbers span:nth-child(2) small::after { content: "no daily upload needed"; font-size: .72rem; }
+.featured-copy .numbers span:nth-child(3) b { font-size: 0; }
+.featured-copy .numbers span:nth-child(3) b::after { content: "CHAOS"; font-size: 1.1rem; }
+.featured-copy .numbers span:nth-child(3) small { font-size: 0; }
+.featured-copy .numbers span:nth-child(3) small::after { content: "whatever deserves the spotlight"; font-size: .72rem; }
+
+@media (max-width:900px) {
+  .content { padding-top: 42px; }
+  .content .video-row {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(260px,82vw);
+    grid-template-columns: none;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scroll-snap-type: x proximity;
+    padding-bottom: 8px;
   }
+  .content .video-card {
+    min-height: 310px;
+    scroll-snap-align: start;
+  }
+  .featured-grid { grid-template-columns: 1fr; gap: 28px; }
+  .featured-player { min-height: 330px; }
+}
+
+@media (max-width:640px) {
+  .content .section-head,
+  .featured > .shell > h2 { margin-bottom: 22px; }
+  .content .video-card { min-height: 290px; }
+  .content .video-card::before,
+  .content .video-poster::before,
+  .content .video-poster::after { left: 20px; right: 20px; }
+  .featured-player { min-height: 300px; }
+  .featured-player::before { left: 22px; top: 22px; }
+  .featured-player::after { left: 22px; right: 22px; bottom: 24px; }
 }
