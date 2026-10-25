@@ -10,6 +10,14 @@
   document.head.appendChild(pollStyles);
 })();
 
+(() => {
+  const supportQr = document.querySelector('.support-desktop-qr img');
+  if (supportQr) {
+    supportQr.src = 'assets/instapay-qr-exact.jpeg?v=20261025-1810';
+    supportQr.alt = 'Exact InstaPay QR uploaded by Claui';
+  }
+})();
+
 document.addEventListener('keydown',function(e){if(e.key==='Escape'){var m=document.getElementById('supportDesktopModal');if(m){m.classList.remove('is-open');document.body.style.overflow='';}}});
 
 (() => {
