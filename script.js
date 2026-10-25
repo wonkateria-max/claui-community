@@ -1,14 +1,4 @@
 (() => {
-  if (!window.matchMedia('(max-width: 900px)').matches) return;
-  document.querySelectorAll('.tiktok-embed-frame[data-src]').forEach(frame => {
-    if (!frame.src) frame.src = frame.dataset.src;
-    frame.loading = 'eager';
-    frame.removeAttribute('aria-hidden');
-    frame.setAttribute('allow', 'fullscreen; autoplay; encrypted-media; picture-in-picture');
-  });
-})();
-
-(() => {
   const aboutStyles = document.createElement('link');
   aboutStyles.rel = 'stylesheet';
   aboutStyles.href = 'about-clean.css';
@@ -48,7 +38,15 @@
   });
 })();
 
-document.addEventListener('keydown',function(e){if(e.key==='Escape'){var m=document.getElementById('supportDesktopModal');if(m){m.classList.remove('is-open');document.body.style.overflow='';}}});
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    const modal = document.getElementById('supportDesktopModal');
+    if (modal) {
+      modal.classList.remove('is-open');
+      document.body.style.overflow = '';
+    }
+  }
+});
 
 (() => {
   const SUPABASE_URL = 'https://foficcmsmtfkzcdcmcsc.supabase.co';
@@ -74,45 +72,17 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'){var m=docum
     return text ? JSON.parse(text) : null;
   };
 
-  document.querySelectorAll('.tiktok-shell').forEach(shell => {
-    const reveal = () => {
-      if (shell.querySelector('iframe')) shell.classList.add('embed-ready');
-    };
-    const observer = new MutationObserver(reveal);
-    observer.observe(shell, {childList:true, subtree:true});
-    reveal();
-  });
-
-  const tabs = [...document.querySelectorAll('.tab')];
-  const communityTitle = document.getElementById('community-title');
-  const communityDescription = document.getElementById('community-description');
-  const primaryLabel = document.getElementById('primary-label');
-  const primaryInput = document.getElementById('primary-input');
-  const messageLabel = document.getElementById('message-label');
-  const messageInput = document.getElementById('message-input');
   const form = document.getElementById('submission-form');
+  const primaryInput = document.getElementById('primary-input');
+  const messageInput = document.getElementById('message-input');
   const success = document.getElementById('success');
-  let activeType = 'game';
 
-  const configs = {
-    game:{title:'What should Claui play next?',desc:'Send a game request. Switch tabs if you want to drop a content idea or podcast story instead.',label:'Game title',ph:'Game name, e.g. Resident Evil 7',ml:'Why this one? <em>optional</em>',mph:'Tell me why I should play it...'},
-    content:{title:'What should Claui make next?',desc:'Drop a content idea for TikTok, live, or something weird enough to become a series.',label:'Idea title',ph:'e.g. Horror challenge night',ml:'Tell me more <em>optional</em>',mph:'What would make it fun to watch?'},
-    story:{title:'Got a story for the live?',desc:'Send a story you are comfortable with possibly being read during the podcast segment.',label:'Story title',ph:'Give your story a short title',ml:'Your story',mph:'Write your story here...'}
-  };
-
-  function select(type){
-    activeType = configs[type] ? type : 'game';
-    const c=configs[activeType];
-    tabs.forEach(t=>{const a=t.dataset.type===activeType;t.classList.toggle('active',a);t.setAttribute('aria-selected',String(a));});
-    communityTitle.textContent=c.title;communityDescription.textContent=c.desc;primaryLabel.textContent=c.label;primaryInput.placeholder=c.ph;messageLabel.innerHTML=c.ml;messageInput.placeholder=c.mph;success.textContent='';
-  }
-  tabs.forEach(t=>t.addEventListener('click',()=>select(t.dataset.type)));
-
-  if(form){
+  if (form) {
     form.addEventListener('submit', async e => {
       e.preventDefault();
-      const title = primaryInput.value.trim();
-      if(!title) return;
+      const title = primaryInput?.value.trim();
+      const story = messageInput?.value.trim();
+      if (!title || !story) return;
 
       const submitButton = form.querySelector('button[type="submit"]');
       const nameInput = form.querySelector('input[name="name"]');
@@ -126,28 +96,27 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'){var m=docum
           method: 'POST',
           headers: { Prefer: 'return=minimal' },
           body: JSON.stringify({
-            type: activeType,
+            type: 'story',
             title,
-            message: messageInput.value.trim() || null,
+            message: story,
             display_name: nameInput?.value.trim() || null,
             tiktok_username: tiktokInput?.value.trim() || null
           })
         });
         form.reset();
-        select(activeType);
-        success.textContent = 'Sent! Your submission is now in Claui’s inbox. ♡';
+        success.textContent = 'Sent! Your story is now in Claui’s private inbox. ♡';
       } catch (error) {
         console.error('Submission failed.', error);
         success.textContent = 'Could not send right now. Please try again.';
       } finally {
         submitButton.disabled = false;
-        submitButton.textContent = 'Submit';
+        submitButton.textContent = 'Send story';
       }
     });
   }
 
   const list = document.getElementById('pick-list');
-  if(!list) return;
+  if (!list) return;
 
   const summary = document.createElement('div');
   summary.className = 'poll-summary';
@@ -170,7 +139,9 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'){var m=docum
     const key = 'claui-voter-token-v1';
     let token = localStorage.getItem(key);
     if (!token) {
-      token = (crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`);
+      token = crypto.randomUUID
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
       localStorage.setItem(key, token);
     }
     return token;
@@ -222,8 +193,7 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'){var m=docum
   };
 
   const castVote = async optionId => {
-    if (!activeRound) return;
-    if (selectedOptionId === optionId) return;
+    if (!activeRound || selectedOptionId === optionId) return;
     const button = list.querySelector(`[data-option-id="${optionId}"] .vote`);
     if (button) {
       button.disabled = true;
