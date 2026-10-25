@@ -21,25 +21,25 @@
   .video-row .video-card:nth-child(1) .video-poster {
     background-image:
       linear-gradient(180deg,rgba(5,5,7,.14) 0%,rgba(5,5,7,.18) 45%,rgba(5,5,7,.92) 100%),
-      url('https://foficcmsmtfkzcdcmcsc.supabase.co/functions/v1/tiktok-thumb?id=7681729305855921429') !important;
+      url('https://foficcmsmtfkzcdcmcsc.supabase.co/functions/v1/tiktok-cover-image?id=7681729305855921429') !important;
   }
 
   .video-row .video-card:nth-child(2) .video-poster {
     background-image:
       linear-gradient(180deg,rgba(5,5,7,.14) 0%,rgba(5,5,7,.18) 45%,rgba(5,5,7,.92) 100%),
-      url('https://foficcmsmtfkzcdcmcsc.supabase.co/functions/v1/tiktok-thumb?id=7698410001156623636') !important;
+      url('https://foficcmsmtfkzcdcmcsc.supabase.co/functions/v1/tiktok-cover-image?id=7698410001156623636') !important;
   }
 
   .video-row .video-card:nth-child(3) .video-poster {
     background-image:
       linear-gradient(180deg,rgba(5,5,7,.14) 0%,rgba(5,5,7,.18) 45%,rgba(5,5,7,.92) 100%),
-      url('https://foficcmsmtfkzcdcmcsc.supabase.co/functions/v1/tiktok-thumb?id=7676937964533943573') !important;
+      url('https://foficcmsmtfkzcdcmcsc.supabase.co/functions/v1/tiktok-cover-image?id=7676937964533943573') !important;
   }
 
   .featured-player .video-poster {
     background-image:
       linear-gradient(180deg,rgba(5,5,7,.12) 0%,rgba(5,5,7,.16) 50%,rgba(5,5,7,.94) 100%),
-      url('https://foficcmsmtfkzcdcmcsc.supabase.co/functions/v1/tiktok-thumb?id=7698410001156623636') !important;
+      url('https://foficcmsmtfkzcdcmcsc.supabase.co/functions/v1/tiktok-cover-image?id=7698410001156623636') !important;
   }
 
   .video-card .video-poster a,
