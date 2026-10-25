@@ -1,216 +1,43 @@
-/* Content refresh prototype: replaces fragile TikTok embeds with low-maintenance creator/community modules. */
-.content .section-head h2,
-.featured > .shell > h2 {
-  font-size: 0 !important;
-}
-.content .section-head h2::after {
-  content: "Tonight at Claui";
-  font-size: clamp(2rem,4vw,3.8rem);
-  line-height: 1;
-}
-.featured > .shell > h2::after {
-  content: "Featured Chaos";
-  font-size: clamp(2rem,4vw,3.8rem);
-  line-height: 1;
-}
-.content .section-head a {
-  font-size: 0 !important;
-}
-.content .section-head a::after {
-  content: "@clawiwawi ↗";
-  font-size: .85rem;
-}
+/* Native replacement for the old TikTok-heavy content sections. */
+.tonight-section{padding:50px 0 82px}
+.tonight-section .section-head{margin-bottom:28px}
+.tonight-section .section-head>div{display:grid;gap:6px}
+.tonight-section .section-head h2{margin:0;font-size:clamp(2rem,4vw,3.8rem);line-height:1}
+.tonight-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.tonight-card{position:relative;min-height:300px;padding:24px;border:1px solid rgba(255,255,255,.1);border-radius:22px;background:radial-gradient(circle at 78% 18%,rgba(239,35,60,.12),transparent 30%),linear-gradient(180deg,rgba(255,255,255,.018),transparent 52%),#0c0c10;display:flex;flex-direction:column;overflow:hidden}
+.tonight-card:after{content:"";position:absolute;inset:auto -45px -65px auto;width:170px;height:170px;border:1px solid rgba(255,255,255,.045);border-radius:50%}
+.tonight-top{display:flex;align-items:center;justify-content:space-between;gap:14px;color:#8a8a94;font-size:.67rem;letter-spacing:.2em;font-weight:800}
+.tonight-top b{font-size:.7rem;color:#55555f}.tonight-top i{width:10px;height:10px;border-radius:50%;background:#ef233c;box-shadow:0 0 0 9px rgba(239,35,60,.08)}
+.tonight-card h3{margin:auto 0 10px;font-size:clamp(1.8rem,2.6vw,3rem);line-height:.96;letter-spacing:-.045em}
+.tonight-card p{max-width:92%;margin:0 0 22px;color:#7c7c86;line-height:1.55;font-size:.84rem}
+.tonight-card a{position:relative;z-index:2;color:#c9c9cf;text-decoration:none;font-size:.76rem;font-weight:750;width:max-content}
+.tonight-card a:hover{color:#fff}
 
-/* No third-party video UI in these sections. */
-.content .tiktok-embed-frame,
-.featured .tiktok-embed-frame {
-  display: none !important;
-}
+.chaos-feature{padding:76px 0;background:#0b0b0e;border-top:1px solid rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.06)}
+.chaos-feature>.shell>h2{font-size:clamp(2rem,4vw,3.8rem);line-height:1;margin:0 0 28px}
+.chaos-feature .featured-grid{display:grid;grid-template-columns:minmax(320px,.92fr) 1.08fr;gap:46px;align-items:center}
+.chaos-visual{position:relative;min-height:390px;aspect-ratio:4/3;border:1px solid rgba(255,255,255,.1);border-radius:24px;overflow:hidden;padding:28px;background:radial-gradient(circle at 78% 20%,rgba(239,35,60,.28),transparent 30%),radial-gradient(circle at 14% 82%,rgba(120,16,26,.18),transparent 33%),linear-gradient(rgba(255,255,255,.024) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.024) 1px,transparent 1px),#09090c;background-size:auto,auto,44px 44px,44px 44px,auto;display:flex;flex-direction:column}
+.chaos-visual>span{font-size:.67rem;letter-spacing:.22em;color:#ef233c;font-weight:800}
+.chaos-visual strong{margin-top:auto;font-size:clamp(2.6rem,5vw,5rem);line-height:.87;letter-spacing:-.065em}
+.chaos-visual small{margin-top:18px;color:#666670;font-size:.64rem;letter-spacing:.17em}
+.chaos-signal{display:flex;align-items:end;gap:5px;height:34px;margin-top:28px}
+.chaos-signal i{display:block;width:4px;border-radius:99px;background:#ef233c;opacity:.7}.chaos-signal i:nth-child(1){height:12px}.chaos-signal i:nth-child(2){height:27px}.chaos-signal i:nth-child(3){height:18px}.chaos-signal i:nth-child(4){height:32px}.chaos-signal i:nth-child(5){height:15px}
+.chaos-feature .featured-copy h3{font-size:clamp(2rem,4vw,4rem);line-height:1;margin:8px 0 18px}
+.chaos-description{max-width:670px;color:#868690;line-height:1.65;margin:0 0 24px}
+.chaos-feature .numbers{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:26px}
+.chaos-feature .numbers span{display:grid;gap:5px;padding:14px 0;border-top:1px solid rgba(255,255,255,.1)}
+.chaos-feature .numbers b{font-size:1rem}
+.chaos-feature .numbers small{color:#73737d;line-height:1.35}
 
-.content .video-row {
-  grid-template-columns: repeat(3,minmax(0,1fr));
-  gap: 14px;
-  overflow: visible;
+@media(max-width:900px){
+  .tonight-grid{grid-auto-flow:column;grid-auto-columns:minmax(260px,82vw);grid-template-columns:none;overflow-x:auto;overscroll-behavior-inline:contain;scroll-snap-type:x proximity;padding-bottom:8px}
+  .tonight-card{min-height:310px;scroll-snap-align:start}
+  .chaos-feature .featured-grid{grid-template-columns:1fr;gap:28px}
+  .chaos-visual{min-height:330px;aspect-ratio:auto}
 }
-.content .video-card {
-  position: relative;
-  min-height: 300px;
-  aspect-ratio: 4/3;
-  border-radius: 22px;
-  overflow: hidden;
-  background:
-    radial-gradient(circle at 78% 18%,rgba(239,35,60,.15),transparent 31%),
-    linear-gradient(180deg,rgba(255,255,255,.018),transparent 48%),
-    #0c0c10;
-  border: 1px solid rgba(255,255,255,.10);
-}
-.content .video-card::before {
-  position: absolute;
-  left: 24px;
-  top: 22px;
-  z-index: 4;
-  font-size: .68rem;
-  letter-spacing: .20em;
-  color: #8b8b96;
-  font-weight: 800;
-}
-.content .video-card:nth-child(1)::before { content: "LIVE TONIGHT"; }
-.content .video-card:nth-child(2)::before { content: "COMMUNITY DECIDES"; }
-.content .video-card:nth-child(3)::before { content: "DROPBOX OPEN"; }
-
-.content .video-poster {
-  display: block !important;
-  position: absolute !important;
-  inset: 0 !important;
-  z-index: 2 !important;
-  padding: 0 !important;
-  background: none !important;
-  opacity: 1 !important;
-  visibility: visible !important;
-  pointer-events: none !important;
-}
-.content .video-poster > * { display: none !important; }
-.content .video-poster::before,
-.content .video-poster::after {
-  position: absolute;
-  left: 24px;
-  right: 24px;
-  z-index: 3;
-  white-space: pre-line;
-}
-.content .video-poster::before {
-  bottom: 68px;
-  color: #f3f1ec;
-  font-size: clamp(1.7rem,2.4vw,2.7rem);
-  line-height: .98;
-  letter-spacing: -.045em;
-  font-weight: 850;
-}
-.content .video-poster::after {
-  bottom: 24px;
-  color: #777782;
-  font-size: .78rem;
-  line-height: 1.45;
-  max-width: 90%;
-}
-.content .video-card:nth-child(1) .video-poster::before { content: "12:00 AM"; }
-.content .video-card:nth-child(1) .video-poster::after { content: "TikTok live · games, stories & after-midnight chaos"; }
-.content .video-card:nth-child(2) .video-poster::before { content: "This week’s\A picks"; }
-.content .video-card:nth-child(2) .video-poster::after { content: "The community poll decides what Claui plays next."; }
-.content .video-card:nth-child(3) .video-poster::before { content: "Stories\A wanted"; }
-.content .video-card:nth-child(3) .video-poster::after { content: "Game requests · content ideas · ClauiPaladesisyon stories"; }
-
-.content .video-card::after {
-  content: "";
-  position: absolute;
-  right: 24px;
-  top: 24px;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #ef233c;
-  box-shadow: 0 0 0 9px rgba(239,35,60,.08);
-}
-
-/* Featured Chaos: one pinned moment, intentionally not a second TikTok feed. */
-.featured {
-  padding: 76px 0;
-}
-.featured-grid {
-  grid-template-columns: minmax(320px,.92fr) 1.08fr;
-  gap: 46px;
-}
-.featured-player {
-  position: relative;
-  aspect-ratio: 4/3;
-  min-height: 360px;
-  overflow: hidden;
-  border-radius: 24px;
-  border: 1px solid rgba(255,255,255,.11);
-  background:
-    radial-gradient(circle at 78% 20%,rgba(239,35,60,.28),transparent 30%),
-    radial-gradient(circle at 16% 78%,rgba(120,16,26,.20),transparent 35%),
-    linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px),
-    #0a0a0d;
-  background-size: auto,auto,44px 44px,44px 44px,auto;
-}
-.featured-player .tiktok-shell,
-.featured-player .video-poster {
-  display: none !important;
-}
-.featured-player::before {
-  content: "PINNED THIS WEEK";
-  position: absolute;
-  left: 28px;
-  top: 26px;
-  color: #ef233c;
-  font-size: .68rem;
-  font-weight: 800;
-  letter-spacing: .22em;
-}
-.featured-player::after {
-  content: "one bad decision.\A one whole live.";
-  position: absolute;
-  left: 28px;
-  right: 28px;
-  bottom: 30px;
-  white-space: pre-line;
-  color: #f3f1ec;
-  font-size: clamp(2.2rem,4.7vw,4.8rem);
-  line-height: .88;
-  letter-spacing: -.065em;
-  font-weight: 900;
-}
-.featured-copy .mini-label {
-  font-size: 0 !important;
-}
-.featured-copy .mini-label::after {
-  content: "FEATURED CHAOS · CURRENT PIN";
-  font-size: .68rem;
-  letter-spacing: .22em;
-}
-.featured-copy .numbers span:nth-child(1) b { font-size: 0; }
-.featured-copy .numbers span:nth-child(1) b::after { content: "PINNED"; font-size: 1.1rem; }
-.featured-copy .numbers span:nth-child(1) small { font-size: 0; }
-.featured-copy .numbers span:nth-child(1) small::after { content: "leave it up until a better moment happens"; font-size: .72rem; }
-.featured-copy .numbers span:nth-child(2) b { font-size: 0; }
-.featured-copy .numbers span:nth-child(2) b::after { content: "WEEKLY"; font-size: 1.1rem; }
-.featured-copy .numbers span:nth-child(2) small { font-size: 0; }
-.featured-copy .numbers span:nth-child(2) small::after { content: "no daily upload needed"; font-size: .72rem; }
-.featured-copy .numbers span:nth-child(3) b { font-size: 0; }
-.featured-copy .numbers span:nth-child(3) b::after { content: "CHAOS"; font-size: 1.1rem; }
-.featured-copy .numbers span:nth-child(3) small { font-size: 0; }
-.featured-copy .numbers span:nth-child(3) small::after { content: "whatever deserves the spotlight"; font-size: .72rem; }
-
-@media (max-width:900px) {
-  .content { padding-top: 42px; }
-  .content .video-row {
-    display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: minmax(260px,82vw);
-    grid-template-columns: none;
-    overflow-x: auto;
-    overscroll-behavior-inline: contain;
-    scroll-snap-type: x proximity;
-    padding-bottom: 8px;
-  }
-  .content .video-card {
-    min-height: 310px;
-    scroll-snap-align: start;
-  }
-  .featured-grid { grid-template-columns: 1fr; gap: 28px; }
-  .featured-player { min-height: 330px; }
-}
-
-@media (max-width:640px) {
-  .content .section-head,
-  .featured > .shell > h2 { margin-bottom: 22px; }
-  .content .video-card { min-height: 290px; }
-  .content .video-card::before,
-  .content .video-poster::before,
-  .content .video-poster::after { left: 20px; right: 20px; }
-  .featured-player { min-height: 300px; }
-  .featured-player::before { left: 22px; top: 22px; }
-  .featured-player::after { left: 22px; right: 22px; bottom: 24px; }
+@media(max-width:640px){
+  .tonight-section{padding:38px 0 60px}.tonight-section .section-head{align-items:end;margin-bottom:20px}.tonight-section .section-head a{font-size:.76rem}
+  .tonight-card{min-height:285px;padding:20px}.tonight-card h3{font-size:2rem}.tonight-card p{max-width:100%}
+  .chaos-feature{padding:54px 0}.chaos-feature>.shell>h2{margin-bottom:22px}.chaos-visual{min-height:300px;padding:22px}.chaos-visual strong{font-size:clamp(2.5rem,13vw,4rem)}
+  .chaos-feature .numbers{grid-template-columns:1fr}.chaos-feature .numbers span{padding:10px 0}
 }
