@@ -1,12 +1,10 @@
 (() => {
   if (!window.matchMedia('(max-width: 900px)').matches) return;
   document.querySelectorAll('.tiktok-embed-frame[data-src]').forEach(frame => {
-    const source = frame.dataset.src || '';
-    const match = source.match(/player\/v1\/(\d+)/);
-    if (!match) return;
-    frame.src = `https://www.tiktok.com/embed/v2/${match[1]}`;
+    if (!frame.src) frame.src = frame.dataset.src;
     frame.loading = 'eager';
-    frame.setAttribute('aria-hidden', 'true');
+    frame.removeAttribute('aria-hidden');
+    frame.setAttribute('allow', 'fullscreen; autoplay; encrypted-media; picture-in-picture');
   });
 })();
 
