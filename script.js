@@ -13,7 +13,7 @@
 (() => {
   const supportQr = document.querySelector('.support-desktop-qr img');
   if (supportQr) {
-    supportQr.src = 'assets/instapay-uploaded.svg?v=20261025-1810';
+    supportQr.src = 'assets/instapay-exact.webp?v=20261025-1915';
     supportQr.alt = 'InstaPay QR uploaded by Claui';
   }
 })();
