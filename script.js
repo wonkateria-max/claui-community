@@ -12,10 +12,30 @@
 
 (() => {
   const supportQr = document.querySelector('.support-desktop-qr img');
-  if (supportQr) {
-    supportQr.src = 'assets/instapay-exact.webp?v=20261025-1915';
-    supportQr.alt = 'InstaPay QR uploaded by Claui';
-  }
+  if (!supportQr) return;
+
+  supportQr.style.opacity = '0';
+  supportQr.alt = 'Loading InstaPay QR…';
+
+  const version = '20261025-original-final';
+  const requests = [1,2,3,4,5,6,7].map(i =>
+    fetch(`assets/qr-part-${i}.txt?v=${version}`, { cache: 'no-store' }).then(response => {
+      if (!response.ok) throw new Error(`QR part ${i} failed to load`);
+      return response.text();
+    })
+  );
+
+  Promise.all(requests).then(parts => {
+    supportQr.onload = () => {
+      supportQr.style.opacity = '1';
+      supportQr.alt = 'InstaPay QR uploaded by Claui';
+    };
+    supportQr.src = 'data:image/webp;base64,' + parts.join('').replace(/\s+/g, '');
+  }).catch(error => {
+    console.error('Could not load the InstaPay QR image.', error);
+    supportQr.style.opacity = '1';
+    supportQr.alt = 'InstaPay QR could not be loaded';
+  });
 })();
 
 document.addEventListener('keydown',function(e){if(e.key==='Escape'){var m=document.getElementById('supportDesktopModal');if(m){m.classList.remove('is-open');document.body.style.overflow='';}}});
