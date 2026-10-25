@@ -1,7 +1,14 @@
 @media (max-width: 900px) {
+  /* On mobile, use TikTok's standard embed card only as the visual preview.
+     Our full-card link stays on top, so tapping always opens the exact post. */
   .video-card .tiktok-embed-frame,
   .featured-player .tiktok-embed-frame {
-    display: none !important;
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: none !important;
+    z-index: 3 !important;
+    background: #0c0c10 !important;
   }
 
   .video-card .video-poster,
@@ -10,34 +17,8 @@
     opacity: 1 !important;
     visibility: visible !important;
     pointer-events: auto !important;
-    background-color:#0c0c10 !important;
-    background-size:cover !important;
-    background-position:center !important;
-    background-repeat:no-repeat !important;
-  }
-
-  .video-row .video-card:nth-child(1) .video-poster {
-    background-image:
-      linear-gradient(180deg,rgba(5,5,7,.14) 0%,rgba(5,5,7,.18) 45%,rgba(5,5,7,.92) 100%),
-      url('https://foficcmsmtfkzcdcmcsc.supabase.co/functions/v1/tiktok-thumb?id=7681729305855921429&v=4') !important;
-  }
-
-  .video-row .video-card:nth-child(2) .video-poster {
-    background-image:
-      linear-gradient(180deg,rgba(5,5,7,.14) 0%,rgba(5,5,7,.18) 45%,rgba(5,5,7,.92) 100%),
-      url('https://foficcmsmtfkzcdcmcsc.supabase.co/functions/v1/tiktok-thumb?id=7698410001156623636&v=4') !important;
-  }
-
-  .video-row .video-card:nth-child(3) .video-poster {
-    background-image:
-      linear-gradient(180deg,rgba(5,5,7,.14) 0%,rgba(5,5,7,.18) 45%,rgba(5,5,7,.92) 100%),
-      url('https://foficcmsmtfkzcdcmcsc.supabase.co/functions/v1/tiktok-thumb?id=7676937964533943573&v=4') !important;
-  }
-
-  .featured-player .video-poster {
-    background-image:
-      linear-gradient(180deg,rgba(5,5,7,.12) 0%,rgba(5,5,7,.16) 50%,rgba(5,5,7,.94) 100%),
-      url('https://foficcmsmtfkzcdcmcsc.supabase.co/functions/v1/tiktok-thumb?id=7698410001156623636&v=4') !important;
+    background:
+      linear-gradient(180deg, rgba(5,5,7,.04) 0%, rgba(5,5,7,.06) 46%, rgba(5,5,7,.9) 100%) !important;
   }
 
   .video-card .video-poster a,
@@ -48,9 +29,9 @@
 
   .video-card .poster-play,
   .featured-player .poster-play {
-    background: rgba(0,0,0,.5);
-    border-color: rgba(255,255,255,.35);
-    backdrop-filter:blur(3px);
+    background: rgba(0,0,0,.48);
+    border-color: rgba(255,255,255,.42);
+    backdrop-filter: blur(3px);
   }
 
   .video-card .clip-no,
@@ -59,7 +40,7 @@
   .featured-player .video-poster strong,
   .video-card .video-poster small,
   .featured-player .video-poster small {
-    text-shadow:0 2px 18px rgba(0,0,0,.72);
+    text-shadow: 0 2px 18px rgba(0,0,0,.82);
   }
 
   .video-card .video-poster small::after,
