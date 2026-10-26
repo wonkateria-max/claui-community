@@ -47,13 +47,17 @@ TikTok oEmbed metadata is used when available. Current oEmbed responses may only
 return an iframe without captions/covers, so an uploaded cover is supported.
 No invented view counts, durations or post dates are displayed. Uploaded covers
 are resized in the admin browser, validated as JPG/PNG/WebP and served by the
-Edge Function. No videos are reuploaded. The three previously supplied clip links
-are published with covers from their actual TikTok players. Selecting a cover
-opens one official TikTok Embed Player in a dialog. No player iframe loads until
-a visitor selects a clip, and closing the dialog removes it to stop playback.
-Escape closes the player and restores focus. The direct TikTok link stays
-available if embedded playback is unavailable. Admin hide, restore, title and
-cover editing still apply.
+Edge Function. The three previously supplied clips are published with their actual
+TikTok covers and matching H.264/AAC MP4 files in `assets/videos/`. The files are
+remuxed with fast-start metadata, without re-encoding, and mapped by their TikTok
+IDs in `community-highlights.js`. Selecting a cover opens a native video player in
+a dialog. No video source loads until a visitor selects it. Closing pauses playback,
+clears the source, and restores focus. The three files total about 6.4 MB.
+
+Other links added in Admin use TikTok's official Embed Player unless a matching
+local video file is deployed and added to the map. TikTok embeds may be unavailable
+even when a direct TikTok player works; failures show a message and the direct
+TikTok link. Admin hide, restore, title and cover editing apply to both player types.
 
 ## Access controls
 

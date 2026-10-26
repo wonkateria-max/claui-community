@@ -2,6 +2,11 @@
   const API = 'https://foficcmsmtfkzcdcmcsc.supabase.co/functions/v1/community-updates';
   const KEY = 'sb_publishable_53ofNWMueg05oCmHjUvvpg_rYLdMJq5';
   const PROFILE = 'https://www.tiktok.com/@clawiwawi';
+  const LOCAL_CLIPS = Object.freeze({
+    '7698410001156623636':'assets/videos/7698410001156623636.mp4',
+    '7681729305855921429':'assets/videos/7681729305855921429.mp4',
+    '7676937964533943573':'assets/videos/7676937964533943573.mp4',
+  });
   const $ = id => document.getElementById(id);
   const number = value => new Intl.NumberFormat('en',{notation:'compact',maximumFractionDigits:1}).format(Number(value)||0);
   const make = (tag,className,text) => {const el=document.createElement(tag);if(className)el.className=className;if(text!==undefined)el.textContent=text;return el;};
@@ -59,21 +64,37 @@
   const videoLink=make('a','highlights-link','Open on TikTok ↗');videoLink.target='_blank';videoLink.rel='noopener noreferrer';
   videoHeader.append(videoTitle,videoClose);videoDialog.append(videoHeader,videoStage,videoNote,videoLink);document.body.append(videoDialog);
   let videoFrame=null;
+  let localVideo=null;
   let videoTrigger=null;
   let previousOverflow='';
   function openVideo(video,trigger) {
     if(!/^\d{15,22}$/.test(String(video.video_id)))return;
     videoTrigger=trigger;videoTitle.textContent=video.title;videoLink.href=PROFILE+'/video/'+video.video_id;
     videoNote.hidden=true;videoStage.replaceChildren();
-    videoFrame=make('iframe');videoFrame.title=video.title+' — TikTok video';
-    videoFrame.src='https://www.tiktok.com/player/v1/'+video.video_id+'?autoplay=1&controls=1&music_info=0&description=0&rel=0';
-    videoFrame.allow='autoplay; encrypted-media; fullscreen; picture-in-picture';videoFrame.allowFullscreen=true;
-    videoFrame.referrerPolicy='strict-origin-when-cross-origin';videoStage.append(videoFrame);
+    if(LOCAL_CLIPS[video.video_id]) {
+      localVideo=make('video');localVideo.src=LOCAL_CLIPS[video.video_id];localVideo.controls=true;localVideo.playsInline=true;localVideo.preload='metadata';
+      localVideo.poster=API+'/image?id='+encodeURIComponent(video.video_id)+'&v='+encodeURIComponent(video.created_at||'1');
+      localVideo.setAttribute('aria-label',video.title);
+      localVideo.addEventListener('error',event=>{if(event.currentTarget!==localVideo||!videoDialog.open)return;videoNote.textContent='This clip could not load. Use the TikTok link below.';videoNote.hidden=false;});
+      videoStage.append(localVideo);
+    } else {
+      videoFrame=make('iframe');videoFrame.title=video.title+' — TikTok video';
+      videoFrame.src='https://www.tiktok.com/player/v1/'+video.video_id+'?autoplay=1&controls=1&music_info=0&description=0&rel=0';
+      videoFrame.allow='autoplay; encrypted-media; fullscreen; picture-in-picture';videoFrame.allowFullscreen=true;
+      videoFrame.referrerPolicy='strict-origin-when-cross-origin';videoStage.append(videoFrame);
+    }
     previousOverflow=document.body.style.overflow;document.body.style.overflow='hidden';videoDialog.showModal();
+    const currentVideo=localVideo;
+    currentVideo?.play().catch(error=>{
+      if(localVideo!==currentVideo||!videoDialog.open)return;
+      videoNote.textContent=error.name==='NotAllowedError'?'Tap the play button to start the video.':'This clip could not load. Use the TikTok link below.';
+      videoNote.hidden=false;
+    });
   }
   videoClose.addEventListener('click',()=>videoDialog.close());
   videoDialog.addEventListener('click',event=>{if(event.target===videoDialog)videoDialog.close();});
   videoDialog.addEventListener('close',()=>{
+    if(localVideo){localVideo.pause();localVideo.removeAttribute('src');localVideo.load();localVideo=null;}
     videoStage.replaceChildren();videoFrame=null;document.body.style.overflow=previousOverflow;
     if(videoTrigger?.isConnected)videoTrigger.focus();else $('latest-content-grid').querySelector('button')?.focus();
   });
