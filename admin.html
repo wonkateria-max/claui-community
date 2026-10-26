@@ -7,7 +7,7 @@
 <title>Claui Admin</title>
 <link rel="stylesheet" href="admin.css?v=20261025-1"/>
 <link rel="stylesheet" href="live-status.css?v=20261026-auto1"/>
-<link rel="stylesheet" href="community-highlights.css?v=20261026-2"/>
+<link rel="stylesheet" href="community-highlights.css?v=20261026-3"/>
 <script defer src="admin-v2.js?v=20261026-highlights1"></script>
 <script defer src="live-status.js?v=20261026-auto1"></script>
 <script defer src="admin-highlights.js?v=20261026-1"></script>
@@ -73,7 +73,7 @@
         <div class="bridge-key-box" id="bridge-key-box" hidden><label>Private LIVE Studio URL<input id="bridge-url" readonly spellcheck="false" autocomplete="off"/></label><div class="bridge-key-actions"><button class="ghost" id="bridge-copy" type="button">Copy link</button><a id="bridge-test" target="_blank" rel="noreferrer noopener">Open connection test ↗</a></div><p class="muted">This link only sends stream rankings. Keep it in your LIVE Studio setup.</p></div>
         <p class="status" id="bridge-status" role="status"></p>
       </section>
-      <section class="panel"><p class="mini">LATEST CONTENT</p><h2>Your TikTok cards</h2><p class="muted">Paste a video link and give it a short title. The homepage shows up to four cards; no video uploads or daily updates required.</p>
+      <section class="panel"><p class="mini">LATEST CONTENT</p><h2>Your featured videos</h2><p class="muted">Paste a video link and give it a short title. The homepage shows up to four videos. Visitors can play each clip on the website; no video uploads or daily updates required.</p>
         <form class="video-card-form" id="clip-form"><label>TikTok video link<input type="url" id="clip-url" placeholder="https://www.tiktok.com/@clawiwawi/video/..." required maxlength="1000"/></label><label>Short title<input id="clip-title" placeholder="A title for this clip" required maxlength="120"/></label><label>Cover image (optional)<input type="file" id="clip-cover" accept="image/jpeg,image/png,image/webp"/></label><small>Choose a clear frame from the clip if TikTok does not return a preview.</small><img class="cover-preview" id="clip-cover-preview" hidden alt="Selected clip cover"/><button type="submit" id="clip-save">Save &amp; publish card</button></form>
         <p class="status" id="clip-status" role="status"></p><div class="admin-video-list" id="admin-video-list"></div>
       </section>

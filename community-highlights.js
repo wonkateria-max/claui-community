@@ -49,6 +49,44 @@
     ranks($('details-gifters'),recap.gifters,'coins','coins',20);
     ranks($('details-likers'),recap.likers,'likes','likes',20);
   }
+  const videoDialog=make('dialog','clip-dialog');
+  videoDialog.setAttribute('aria-labelledby','clip-dialog-title');
+  const videoHeader=make('div','clip-dialog-head');
+  const videoTitle=make('h2');videoTitle.id='clip-dialog-title';
+  const videoClose=make('button','clip-dialog-close','×');videoClose.type='button';videoClose.setAttribute('aria-label','Close video');
+  const videoStage=make('div','clip-dialog-stage');
+  const videoNote=make('p','clip-dialog-note','');videoNote.setAttribute('role','status');videoNote.hidden=true;
+  const videoLink=make('a','highlights-link','Open on TikTok ↗');videoLink.target='_blank';videoLink.rel='noopener noreferrer';
+  videoHeader.append(videoTitle,videoClose);videoDialog.append(videoHeader,videoStage,videoNote,videoLink);document.body.append(videoDialog);
+  let videoFrame=null;
+  let videoTrigger=null;
+  let previousOverflow='';
+  function openVideo(video,trigger) {
+    if(!/^\d{15,22}$/.test(String(video.video_id)))return;
+    videoTrigger=trigger;videoTitle.textContent=video.title;videoLink.href=PROFILE+'/video/'+video.video_id;
+    videoNote.hidden=true;videoStage.replaceChildren();
+    videoFrame=make('iframe');videoFrame.title=video.title+' — TikTok video';
+    videoFrame.src='https://www.tiktok.com/player/v1/'+video.video_id+'?autoplay=1&controls=1&music_info=0&description=0&rel=0';
+    videoFrame.allow='autoplay; encrypted-media; fullscreen; picture-in-picture';videoFrame.allowFullscreen=true;
+    videoFrame.referrerPolicy='strict-origin-when-cross-origin';videoStage.append(videoFrame);
+    previousOverflow=document.body.style.overflow;document.body.style.overflow='hidden';videoDialog.showModal();
+  }
+  videoClose.addEventListener('click',()=>videoDialog.close());
+  videoDialog.addEventListener('click',event=>{if(event.target===videoDialog)videoDialog.close();});
+  videoDialog.addEventListener('close',()=>{
+    videoStage.replaceChildren();videoFrame=null;document.body.style.overflow=previousOverflow;
+    if(videoTrigger?.isConnected)videoTrigger.focus();else $('latest-content-grid').querySelector('button')?.focus();
+  });
+  window.addEventListener('message',event=>{
+    if(event.origin!=='https://www.tiktok.com'||!videoFrame||event.source!==videoFrame.contentWindow||event.data?.['x-tiktok-player']!==true)return;
+    const {type,value}=event.data;
+    if(type==='onPlayerReady'||type==='onStateChange'&&value===1)videoNote.hidden=true;
+    if(type==='onPlayerError'||type==='onError') {
+      const code=Number(typeof value==='object'?value?.errorCode:value);
+      videoNote.textContent=code===3002?'Tap the play button to start the video.':'Having trouble playing? Use the TikTok link below.';
+      videoNote.hidden=false;
+    }
+  });
   function renderVideos(rows) {
     const grid=$('latest-content-grid');grid.replaceChildren();
     if (!rows?.length) {
@@ -56,12 +94,15 @@
       empty.append(make('span','clip-mark','↗'),make('h3','','More chaos on TikTok'),make('p','','Clips from the late-night games, reactions, and everything in between.'));
       const link=make('a','highlights-link','Watch @clawiwawi ↗');link.href=PROFILE;link.target='_blank';link.rel='noreferrer';empty.append(link);grid.append(empty);return;
     }
-    rows.slice(0,4).forEach(video=>{
-      const card=make('a','content-clip');card.href=`${PROFILE}/video/${video.video_id}`;card.target='_blank';card.rel='noreferrer';
+    rows.filter(video=>/^\d{15,22}$/.test(String(video.video_id))).slice(0,4).forEach(video=>{
+      const card=make('article','content-clip');
+      const open=make('button','content-clip-open');open.type='button';open.setAttribute('aria-label','Play '+video.title);
       const poster=make('div','content-clip-poster');
       const img=make('img');img.src=`${API}/image?id=${encodeURIComponent(video.video_id)}&v=${encodeURIComponent(video.created_at||'1')}`;img.alt='';img.loading='lazy';
       const play=make('span','content-play','▶');play.setAttribute('aria-hidden','true');poster.append(img,play);
-      card.append(poster,make('h3','',video.title),make('span','content-clip-label','Watch on TikTok ↗'));grid.append(card);
+      open.append(poster);open.addEventListener('click',()=>openVideo(video,open));
+      const link=make('a','content-clip-label','Open on TikTok ↗');link.href=PROFILE+'/video/'+video.video_id;link.target='_blank';link.rel='noopener noreferrer';
+      card.append(open,make('h3','',video.title),link);grid.append(card);
     });
   }
   async function load() {

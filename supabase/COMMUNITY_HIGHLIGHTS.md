@@ -47,8 +47,13 @@ TikTok oEmbed metadata is used when available. Current oEmbed responses may only
 return an iframe without captions/covers, so an uploaded cover is supported.
 No invented view counts, durations or post dates are displayed. Uploaded covers
 are resized in the admin browser, validated as JPG/PNG/WebP and served by the
-Edge Function. No videos are reuploaded. Three previously supplied clip links
-are saved as hidden drafts, ready to title and illustrate before publishing.
+Edge Function. No videos are reuploaded. The three previously supplied clip links
+are published with covers from their actual TikTok players. Selecting a cover
+opens one official TikTok Embed Player in a dialog. No player iframe loads until
+a visitor selects a clip, and closing the dialog removes it to stop playback.
+Escape closes the player and restores focus. The direct TikTok link stays
+available if embedded playback is unavailable. Admin hide, restore, title and
+cover editing still apply.
 
 ## Access controls
 
