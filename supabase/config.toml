@@ -1,0 +1,3 @@
+[functions.tiktok-live-status]
+# The function validates the project's publishable key in its handler.
+verify_jwt = false

@@ -1,0 +1,39 @@
+/* Red pulses and the animated waveform are reserved for a verified broadcast. */
+html:not([data-live-state="live"]) .broadcast-dot,
+html:not([data-live-state="live"]) .nav-dot span,
+html:not([data-live-state="live"]) .live-state-dot {
+  background: #777782;
+  box-shadow: none;
+  animation: none;
+}
+html:not([data-live-state="live"]) .broadcast-meta strong { color: #a7a7b2; }
+html:not([data-live-state="live"]) .waveform i {
+  height: 8px;
+  opacity: .45;
+  background: #777782;
+  animation: none;
+}
+.broadcast-head { flex-wrap: wrap; }
+.broadcast-time { letter-spacing: .05em; }
+.live-status-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 18px;
+  background: #101014;
+}
+.live-status-panel .mini { margin: 0 0 9px; }
+.live-status-panel strong { display: flex; align-items: center; gap: 9px; font-size: 1rem; }
+.live-status-panel .muted { margin: 8px 0 0; font-size: .78rem; line-height: 1.5; }
+.live-state-dot { width: 8px; height: 8px; border-radius: 50%; background: #ef233c; }
+html[data-live-state="live"] .live-status-panel strong { color: #ef5367; }
+.live-status-panel a { color: #dcdce2; font-size: .8rem; text-decoration: none; white-space: nowrap; }
+@media (max-width: 520px) { .live-status-panel { align-items: flex-start; flex-direction: column; } }
+@media (prefers-reduced-motion: reduce) {
+  .broadcast-dot, .nav-dot span, .waveform i { animation: none !important; }
+  html[data-live-state="live"] .waveform i { height: 18px; }
+}

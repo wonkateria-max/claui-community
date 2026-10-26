@@ -1,12 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-live-state="unknown">
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <meta name="theme-color" content="#070708"/>
 <title>Claui Admin</title>
 <link rel="stylesheet" href="admin.css?v=20261025-1"/>
+<link rel="stylesheet" href="live-status.css?v=20261026-auto1"/>
 <script defer src="admin-v2.js?v=20261025-2"></script>
+<script defer src="live-status.js?v=20261026-auto1"></script>
 </head>
 <body>
 <main class="admin-shell">
@@ -28,6 +30,16 @@
       <div><p class="eyebrow">CLAUI CONTROL ROOM</p><h1>Community Admin</h1></div>
       <div class="top-actions"><a href="./" target="_blank" rel="noreferrer">Open live site ↗</a><button id="logout-btn" class="ghost" type="button">Log out</button></div>
     </header>
+
+    <section class="live-status-panel" aria-label="Automatic TikTok live status">
+      <div>
+        <p class="mini">AUTOMATIC TIKTOK STATUS</p>
+        <strong><span class="live-state-dot" aria-hidden="true"></span><span data-live-status role="status">CHECK TIKTOK</span></strong>
+        <p class="muted" data-live-checked>Checking TikTok…</p>
+        <p class="muted">Checks automatically while this page is open. No switch needed.</p>
+      </div>
+      <a href="https://www.tiktok.com/@clawiwawi" target="_blank" rel="noreferrer" data-live-watch>Visit TikTok ↗</a>
+    </section>
 
     <div class="stats-grid">
       <article><span>Active poll</span><strong id="stat-poll">—</strong></article>
