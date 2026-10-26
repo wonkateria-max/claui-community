@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="referrer" content="no-referrer"><meta name="robots" content="noindex,nofollow">
+  <title>Claui · TikFinity connection</title>
+  <style>
+    *{box-sizing:border-box}body{margin:0;background:transparent;color:#eee;font:14px/1.55 system-ui,sans-serif}
+    .bridge-card{width:min(460px,calc(100% - 32px));margin:24px auto;padding:24px;background:#101014;border:1px solid #2b2b32;border-radius:18px}
+    h1{font-size:21px;margin:5px 0 16px}p{color:#aaa}small{color:#777}.label{font-size:10px;letter-spacing:.2em;color:#ef5367}
+    #bridge-state{color:#f4f1ea;font-weight:700}a{color:#eee}button{background:#f4f1ea;color:#111;padding:10px 14px;border:0;border-radius:20px;cursor:pointer}
+    body.overlay .bridge-card{display:none}
+  </style>
+  <script type="module" src="bridge.js?v=20261026-1"></script>
+</head>
+<body>
+  <main class="bridge-card">
+    <span class="label">CLAUI / PRIVATE CONNECTION</span><h1>TikFinity → Community</h1>
+    <p id="bridge-state" role="status">Preparing connection…</p>
+    <p id="bridge-detail">Open TikFinity Desktop on this computer and connect it to @clawiwawi.</p>
+    <p id="bridge-pending"></p>
+    <p>This page listens for gifts and likes. Keep it running while streaming, or add the private link to LIVE Studio as a Link source.</p>
+    <button id="bridge-overlay" type="button">Make source transparent</button>
+    <p><a href="admin.html">Open Claui Admin ↗</a></p>
+    <small>Public viewers cannot use this page without your private connection link.</small>
+  </main>
+</body>
+</html>

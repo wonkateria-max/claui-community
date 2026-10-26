@@ -86,6 +86,7 @@
     if (loginView) loginView.hidden = true;
     if (dashboardView) dashboardView.hidden = false;
     await loadDashboard();
+    window.dispatchEvent(new Event('claui-admin-ready'));
   };
 
   const makeButton = (label, attrs = {}) => {
@@ -283,6 +284,7 @@
     try { if (session?.access_token) await authFetch('/auth/v1/logout', { method: 'POST' }); } catch (_) {}
     clearSession();
     showLogin();
+    window.dispatchEvent(new Event('claui-admin-logout'));
   });
 
   pollOptionsEl?.addEventListener('click', async event => {

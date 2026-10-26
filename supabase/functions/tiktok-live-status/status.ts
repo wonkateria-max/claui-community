@@ -15,6 +15,8 @@ type CacheRow = {
   expires_at: string;
   next_check_at: string;
   lease_token: string | null;
+  room_id?: string | null;
+  started_at?: string | null;
 };
 
 function object(value: unknown): JsonObject {
@@ -24,7 +26,7 @@ function object(value: unknown): JsonObject {
 
 // A room ID survives the end of a broadcast. Only an explicit, recognized
 // liveRoom.status is evidence of being live; a changed/blocked response is unknown.
-export function parseTikTokStatus(payload: unknown): Exclude<LiveState, 'unknown'> {
+export function parseTikTokBroadcast(payload: unknown) {
   const root = object(payload);
   if (root.statusCode !== undefined && root.statusCode !== 0) {
     throw new Error('TikTok returned an error');
@@ -34,22 +36,38 @@ export function parseTikTokStatus(payload: unknown): Exclude<LiveState, 'unknown
   if (typeof user.uniqueId !== 'string' || user.uniqueId.toLowerCase() !== USERNAME) {
     throw new Error('TikTok account could not be verified');
   }
-  const status = object(data.liveRoom).status;
-  if (status === 4) return 'offline';
+  const room = object(data.liveRoom);
+  const status = room.status;
+  if (status === 4) return { status: 'offline' as const, room_id: null, started_at: null };
   if (status === 2 && typeof user.roomId === 'string' && /^[1-9]\d*$/.test(user.roomId)) {
-    return 'live';
+    const start = Number(room.startTime);
+    return { status: 'live' as const, room_id: user.roomId,
+      started_at: Number.isFinite(start) && start > 0 && start < Date.now() / 1000 + 300
+        ? new Date(start * 1000).toISOString() : null };
   }
   throw new Error('TikTok broadcast status could not be confirmed');
 }
 
+export function parseTikTokStatus(payload: unknown): Exclude<LiveState, 'unknown'> {
+  return parseTikTokBroadcast(payload).status;
+}
+
 export function parseTikTokHtml(html: string): Exclude<LiveState, 'unknown'> {
+  return parseTikTokHtmlBroadcast(html).status;
+}
+
+function parseTikTokHtmlBroadcast(html: string) {
   const match = html.match(/<script\b(?=[^>]*\bid=["']SIGI_STATE["'])[^>]*>([\s\S]*?)<\/script>/i);
   if (!match) throw new Error('TikTok page has no broadcast data');
   const state = object(JSON.parse(match[1]));
-  return parseTikTokStatus(object(state.LiveRoom).liveRoomUserInfo);
+  return parseTikTokBroadcast(object(state.LiveRoom).liveRoomUserInfo);
 }
 
 export async function detectTikTokStatus(fetcher: Fetcher = fetch) {
+  return (await detectTikTokBroadcast(fetcher)).status;
+}
+
+export async function detectTikTokBroadcast(fetcher: Fetcher = fetch) {
   const headers = {
     'User-Agent': 'Mozilla/5.0',
     'Accept-Language': 'en-US,en;q=0.9',
@@ -61,7 +79,7 @@ export async function detectTikTokStatus(fetcher: Fetcher = fetch) {
       { headers: { ...headers, Accept: 'application/json' }, signal: AbortSignal.timeout(6500) },
     );
     if (!response.ok) throw new Error('TikTok API request failed');
-    return parseTikTokStatus(await response.json());
+    return parseTikTokBroadcast(await response.json());
   } catch {
     // The public live page is an independent fallback if the API is unavailable.
     const response = await fetcher(`https://www.tiktok.com/@${USERNAME}/live`, {
@@ -70,7 +88,7 @@ export async function detectTikTokStatus(fetcher: Fetcher = fetch) {
     if (!response.ok) throw new Error('TikTok live page request failed');
     const html = await response.text();
     if (html.length > 3_000_000) throw new Error('TikTok page was unexpectedly large');
-    return parseTikTokHtml(html);
+    return parseTikTokHtmlBroadcast(html);
   }
 }
 
@@ -85,6 +103,8 @@ export function publicStatus(row: CacheRow | null, now: number) {
     checked_at: fresh ? row!.checked_at : null,
     expires_at: fresh ? row!.expires_at : null,
     retry_after: CHECK_INTERVAL_MS / 1000,
+    room_id: fresh && row?.status === 'live' ? row.room_id ?? null : null,
+    started_at: fresh && row?.status === 'live' ? row.started_at ?? row.checked_at : null,
   };
 }
 
@@ -162,7 +182,8 @@ export function createHandler({ env, fetcher = fetch, now = Date.now, uuid = () 
       if (!claimed) return json({ ...publicStatus(cached, now()), retry_after: 5 });
 
       let status: LiveState = 'unknown';
-      try { status = await detectTikTokStatus(fetcher); }
+      let broadcast: Awaited<ReturnType<typeof detectTikTokBroadcast>> | null = null;
+      try { broadcast = await detectTikTokBroadcast(fetcher); status = broadcast.status; }
       catch { console.warn('TikTok live status could not be confirmed.'); }
 
       const checkedAt = now();
@@ -175,6 +196,10 @@ export function createHandler({ env, fetcher = fetch, now = Date.now, uuid = () 
           expires_at: expiry,
           next_check_at: expiry,
           lease_token: null,
+          room_id: broadcast?.status === 'live' ? broadcast.room_id : cached.room_id ?? null,
+          started_at: broadcast?.status === 'live'
+            ? broadcast.started_at ?? (cached.room_id === broadcast.room_id ? cached.started_at : null) ?? new Date(checkedAt).toISOString()
+            : cached.started_at ?? null,
         }),
       });
       if (!updated) throw new Error('Status cache lease expired');

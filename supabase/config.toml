@@ -1,3 +1,7 @@
 [functions.tiktok-live-status]
 # The function validates the project's publishable key in its handler.
 verify_jwt = false
+
+[functions.community-updates]
+# Public summaries; writes validate an admin JWT or a restricted bridge token.
+verify_jwt = false
