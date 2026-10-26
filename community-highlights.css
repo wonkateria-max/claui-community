@@ -1,4 +1,5 @@
 .community-highlights{padding:16px 0 76px}
+#highlights{scroll-margin-top:104px}
 .community-highlights [hidden],.community-admin-highlights [hidden]{display:none!important}
 .highlights-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin:0 0 24px}
 .highlights-heading h2{margin:8px 0 0;font-size:clamp(1.8rem,3.8vw,3.1rem);line-height:1.05;letter-spacing:-.035em}
@@ -22,8 +23,8 @@ html[data-live-state="live"] .supporter-state i{background:#ef233c}
 .supporter-identity strong{font-size:.85rem;font-weight:650;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .supporter-identity small{font-size:.72rem;color:#83838e}
 .rank-empty{color:#74747f;font-size:.82rem;padding:12px 0}
-.supporter-empty{padding:38px 28px}
-.supporter-empty>span{display:block;color:#ed586b;font-size:1.5rem;margin-bottom:12px}
+.supporter-empty{padding:22px 28px 0}
+.supporter-empty>span{display:none}
 .supporter-empty h3{font-size:1.25rem;margin:0 0 9px;letter-spacing:-.02em}
 .supporter-empty p{margin:0;color:#858591;font-size:.84rem;line-height:1.7}
 .supporter-card-foot{padding:22px 28px;border-top:1px solid #25252b;display:flex;justify-content:space-between;align-items:center;gap:24px}

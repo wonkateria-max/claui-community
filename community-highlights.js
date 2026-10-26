@@ -21,7 +21,8 @@
         img.addEventListener('error',()=>img.remove(),{once:true});avatar.append(img);
       }
       const identity=make('span','supporter-identity');
-      identity.append(make('strong','',person.nickname||person.username||'Viewer'),make('small','',`${number(person[field])} ${unit}`));
+      const amount=Number(person[field])||0;
+      identity.append(make('strong','',person.nickname||person.username||'Viewer'),make('small','',`${number(amount)} ${amount===1?(unit==='coins'?'coin':'like'):unit}`));
       li.append(make('span','supporter-place',String(index+1)),avatar,identity);container.append(li);
     });
   };
@@ -30,16 +31,17 @@
     recap=data;
     const hasStream=Boolean(data?.stream);
     $('supporter-empty').hidden=hasStream;
-    $('supporter-board').hidden=!hasStream;
+    $('supporter-board').hidden=false;
+    $('supporter-foot').hidden=!hasStream;
     $('supporter-totals').hidden=!hasStream;
     $('supporter-details-open').hidden=!hasStream;
     $('supporter-date').textContent=hasStream
       ? `Latest recorded LIVE · ${new Date(data.stream.started_at).toLocaleDateString('en-PH',{month:'short',day:'numeric',timeZone:'Asia/Manila'})}`
       : 'Next LIVE';
+    ranks($('top-gifters'),data?.gifters || [],'coins','coins');
+    ranks($('top-likers'),data?.likers || [],'likes','likes');
     if (!hasStream) return;
-    ranks($('top-gifters'),data.gifters,'coins','coins');
-    ranks($('top-likers'),data.likers,'likes','likes');
-    $('supporter-totals').textContent=`${number(data.total_likes)} likes · ${number(data.total_gifts)} gifts`;
+    $('supporter-totals').textContent=`${number(data.total_likes)} ${Number(data.total_likes)===1?'like':'likes'} · ${number(data.total_gifts)} ${Number(data.total_gifts)===1?'gift':'gifts'}`;
     if ($('supporter-dialog').open) renderDetails();
   }
   function renderDetails() {
