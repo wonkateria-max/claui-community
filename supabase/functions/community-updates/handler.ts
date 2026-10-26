@@ -1,7 +1,11 @@
 import { integer, safeImage } from '../../../tikfinity-events.js';
 
 const PUBLIC_KEY = 'sb_publishable_53ofNWMueg05oCmHjUvvpg_rYLdMJq5';
-const SITE = 'https://wonkateria-max.github.io';
+const SITE = 'https://claui-community.pages.dev';
+const SITE_BASES = new Map([
+  [SITE, SITE],
+  ['https://wonkateria-max.github.io', 'https://wonkateria-max.github.io/claui-community'],
+]);
 const PROFILE = 'https://www.tiktok.com/@clawiwawi';
 const ROOM = /^\d{10,30}$/;
 const VIDEO = /^\d{15,25}$/;
@@ -120,13 +124,14 @@ export function createCommunityHandler({ env, fetcher = fetch, now = Date.now }:
     const action = url.pathname.split('/').filter(Boolean).at(-1);
     const origin = req.headers.get('Origin');
     const local = origin !== null && /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
+    const allowedOrigin = origin !== null && (SITE_BASES.has(origin) || local);
     const headers = {
-      'Access-Control-Allow-Origin':local ? origin! : SITE,
+      'Access-Control-Allow-Origin':allowedOrigin ? origin! : SITE,
       'Access-Control-Allow-Headers':'apikey, authorization, content-type',
       'Access-Control-Allow-Methods':'GET, POST, OPTIONS', Vary:'Origin', 'Cache-Control':'no-store',
     };
     const json = (data: unknown, status = 200) => Response.json(data,{status,headers});
-    if (origin && origin !== SITE && !local) return json({error:'Origin not allowed.'},403);
+    if (origin && !allowedOrigin) return json({error:'Origin not allowed.'},403);
     if (req.method === 'OPTIONS') return new Response(null,{status:204,headers});
     if (!['GET','POST'].includes(req.method)) return json({error:'Method not allowed.'},405);
     try {
@@ -186,7 +191,8 @@ export function createCommunityHandler({ env, fetcher = fetch, now = Date.now }:
         const userId = adminUser;
         const token = [...crypto.getRandomValues(new Uint8Array(32))].map(x=>x.toString(16).padStart(2,'0')).join('');
         await rpc('rotate_community_bridge_key',{p_hash:await sha256(token),p_user_id:userId});
-        return json({url:`${SITE}/claui-community/bridge.html#token=${token}`});
+        const siteBase = SITE_BASES.get(origin || '') || SITE;
+        return json({url:`${siteBase}/bridge.html#token=${token}`});
       }
       if (action === 'videos') {
         if (body.action === 'hide' || body.action === 'restore') {

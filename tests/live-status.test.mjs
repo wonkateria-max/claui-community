@@ -129,3 +129,27 @@ test('requests enforce method, origin and publishable key before data access', a
   assert.equal(preflight.headers.get('Access-Control-Allow-Origin'), 'https://wonkateria-max.github.io');
   assert.equal(h.databaseCalls(), 0);
 });
+
+test('Cloudflare and GitHub can read status with CORS headers for their exact origin', async () => {
+  for (const Origin of ['https://claui-community.pages.dev', 'https://wonkateria-max.github.io']) {
+    const h = harness({ cachedState: 'offline', fresh: true });
+    const preflight = await h.handler(request({ Origin }, 'OPTIONS'));
+    assert.equal(preflight.status, 204);
+    assert.equal(preflight.headers.get('Access-Control-Allow-Origin'), Origin);
+    const response = await h.handler(request({ Origin, apikey: KEY }));
+    assert.equal(response.status, 200);
+    assert.equal(response.headers.get('Access-Control-Allow-Origin'), Origin);
+    assert.equal((await response.json()).status, 'offline');
+    assert.equal((await h.handler(request({ Origin }))).status, 401);
+  }
+});
+
+test('Cloudflare lookalikes and other Pages projects cannot access the status cache', async () => {
+  const h = harness();
+  for (const Origin of ['https://claui-community.pages.dev.evil.example', 'https://other.pages.dev', 'https://preview.claui-community.pages.dev', 'http://claui-community.pages.dev']) {
+    const response = await h.handler(request({ Origin, apikey: KEY }, 'OPTIONS'));
+    assert.equal(response.status, 403);
+    assert.notEqual(response.headers.get('Access-Control-Allow-Origin'), Origin);
+  }
+  assert.equal(h.databaseCalls(), 0);
+});

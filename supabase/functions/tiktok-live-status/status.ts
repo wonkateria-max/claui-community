@@ -4,7 +4,8 @@ export const CHECK_INTERVAL_MS = 30_000;
 const ERROR_INTERVAL_MS = 60_000;
 const LEASE_MS = 25_000;
 const PUBLIC_KEY = 'sb_publishable_53ofNWMueg05oCmHjUvvpg_rYLdMJq5';
-const SITE_ORIGIN = 'https://wonkateria-max.github.io';
+const SITE_ORIGIN = 'https://claui-community.pages.dev';
+const SITE_ORIGINS = new Set([SITE_ORIGIN, 'https://wonkateria-max.github.io']);
 
 type JsonObject = Record<string, unknown>;
 type Fetcher = typeof fetch;
@@ -148,15 +149,16 @@ export function createHandler({ env, fetcher = fetch, now = Date.now, uuid = () 
   return async (req: Request): Promise<Response> => {
     const origin = req.headers.get('Origin');
     const localOrigin = origin !== null && /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
+    const allowedOrigin = origin !== null && (SITE_ORIGINS.has(origin) || localOrigin);
     const headers = {
-      'Access-Control-Allow-Origin': localOrigin ? origin! : SITE_ORIGIN,
+      'Access-Control-Allow-Origin': allowedOrigin ? origin! : SITE_ORIGIN,
       'Access-Control-Allow-Headers': 'apikey, content-type',
       'Access-Control-Allow-Methods': 'GET, OPTIONS',
       'Cache-Control': 'no-store',
       Vary: 'Origin',
     };
     const json = (value: unknown, status = 200) => Response.json(value, { status, headers });
-    if (origin && origin !== SITE_ORIGIN && !localOrigin) return json({ error: 'Origin not allowed' }, 403);
+    if (origin && !allowedOrigin) return json({ error: 'Origin not allowed' }, 403);
     if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers });
     if (req.method !== 'GET') return json({ error: 'Method not allowed' }, 405);
     // New publishable keys are not JWTs. Validate the API key here, with gateway

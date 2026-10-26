@@ -87,6 +87,37 @@ test('public summaries do not expose source keys or require admin sign-in',async
   assert.deepEqual((await response.json()).recap,{stream:null,gifters:[],likers:[]});
   assert.equal(h.calls.some(x=>x.url.includes('community_bridge_keys')),false);
 });
+test('Cloudflare and GitHub can read summaries but still need admin authentication',async()=>{
+  for(const Origin of ['https://claui-community.pages.dev','https://wonkateria-max.github.io']) {
+    const h=backend();
+    const response=await h.request('',undefined,{Origin});
+    assert.equal(response.status,200);
+    assert.equal(response.headers.get('Access-Control-Allow-Origin'),Origin);
+    assert.equal((await h.request('admin',undefined,{Origin})).status,401);
+    assert.equal((await h.request('pair',{}, {Origin})).status,401);
+    assert.equal(h.calls.some(x=>x.url.includes('rotate_community_bridge_key')),false);
+  }
+});
+test('unknown origins and Pages lookalikes are rejected before any community data access',async()=>{
+  const h=backend();
+  for(const Origin of ['https://claui-community.pages.dev.evil.example','https://other.pages.dev','https://preview.claui-community.pages.dev','http://claui-community.pages.dev','__proto__']) {
+    const response=await h.request('',undefined,{Origin});
+    assert.equal(response.status,403);
+    assert.notEqual(response.headers.get('Access-Control-Allow-Origin'),Origin);
+  }
+  assert.equal(h.calls.length,0);
+});
+test('authorized pairing links use the correct bridge path for each supported host',async()=>{
+  for(const [Origin,base] of [['https://claui-community.pages.dev','https://claui-community.pages.dev'],['https://wonkateria-max.github.io','https://wonkateria-max.github.io/claui-community']]) {
+    const h=backend({validAdmin:true});
+    const response=await h.request('pair',{}, {Origin,Authorization:'Bearer eyJvalid-test-token'});
+    assert.equal(response.status,200);
+    const link=new URL((await response.json()).url);
+    assert.equal(link.origin+link.pathname,base+'/bridge.html');
+    assert.match(link.hash,/^#token=[a-f0-9]{64}$/);
+    assert.equal(h.calls.filter(x=>x.url.includes('rotate_community_bridge_key')).length,1);
+  }
+});
 test('admin and key creation reject anonymous and forged admin requests',async()=>{
   const h=backend();
   assert.equal((await h.request('admin')).status,401);
