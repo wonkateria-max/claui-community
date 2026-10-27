@@ -12,6 +12,8 @@
 <script defer src="admin-v2.js?v=20261026-highlights1"></script>
 <script defer src="live-status.js?v=20261026-auto1"></script>
 <script defer src="admin-highlights.js?v=20261026-1"></script>
+<script defer src="admin-telegram.js?v=20261027-1"></script>
+<style>.telegram-panel{margin:22px 0}.telegram-panel form{display:grid;gap:12px;max-width:620px}.telegram-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.telegram-panel ol{padding-left:22px;color:#aaa;line-height:1.7}.telegram-panel a{color:#f2f0ec}.telegram-panel [hidden]{display:none!important}</style>
 </head>
 <body>
 <main class="admin-shell">
@@ -42,6 +44,19 @@
         <p class="muted">Checks automatically while this page is open. No switch needed.</p>
       </div>
       <a href="https://www.tiktok.com/@clawiwawi" target="_blank" rel="noreferrer" data-live-watch>Visit TikTok ↗</a>
+    </section>
+
+    <section class="panel telegram-panel" id="telegram-alerts" aria-labelledby="telegram-heading">
+      <p class="mini">PRIVATE NOTIFICATIONS</p><h2 id="telegram-heading">Telegram alerts</h2>
+      <p class="muted" id="telegram-health">Checking connection…</p>
+      <p class="muted">Get an alert for each recorded vote, game request, content suggestion, and story. Works even when this page is closed.</p>
+      <details id="telegram-setup"><summary>Connect or replace your Telegram bot</summary>
+        <ol><li>Open <a href="https://t.me/BotFather" target="_blank" rel="noopener noreferrer">@BotFather</a> in Telegram and send <b>/newbot</b>.</li><li>Choose a name and username, then paste its token below. Use a bot dedicated to this website.</li><li>Open the connection link, press <b>Start</b> in Telegram, then confirm here.</li></ol>
+        <form id="telegram-token-form"><label>Bot token<input type="password" id="telegram-token" autocomplete="off" spellcheck="false" placeholder="Paste the token from BotFather" required maxlength="150"/></label><small class="muted">Saved encrypted on the server. Never added to GitHub or browser storage.</small><button type="submit">Create Telegram connection link</button></form>
+        <div id="telegram-pairing" hidden><p><a id="telegram-connect-link" target="_blank" rel="noopener noreferrer">Open bot in Telegram ↗</a></p><button id="telegram-confirm" type="button">I pressed Start — connect alerts</button><p class="muted">The connection link expires after 30 minutes.</p></div>
+      </details>
+      <div class="telegram-actions" id="telegram-controls" hidden><button class="ghost" id="telegram-test" type="button">Send test alert</button><button class="ghost" id="telegram-toggle" type="button">Pause alerts</button></div>
+      <p class="status" id="telegram-status" role="status" aria-live="polite"></p>
     </section>
 
     <div class="stats-grid">
