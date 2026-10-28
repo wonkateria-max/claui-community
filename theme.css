@@ -59,12 +59,12 @@ html[data-theme="light"] {
 }
 html[data-theme="light"] body { background: var(--theme-page); color: var(--theme-text); }
 html[data-theme="light"] ::selection { background: #f4cbd2; color: #211f24; }
-html[data-theme="light"] .topbar { background: rgba(245,243,239,.95); border-color: var(--theme-border); }
+html[data-theme="light"] .topbar { background: var(--theme-page); border-color: var(--theme-border); backdrop-filter: none; }
 html[data-theme="light"] .nav a { color: var(--theme-muted); }
 html[data-theme="light"] .nav a:hover,
 html[data-theme="light"] .nav a.active { color: var(--theme-text); }
 html[data-theme="light"] .brand,
-html[data-theme="light"] .footer-logo { background: transparent; padding: 0; border-radius: 0; }
+html[data-theme="light"] .footer-logo { background: var(--theme-page); padding: 0; border-radius: 0; isolation: isolate; }
 html[data-theme="light"] .brand .logo-dark,
 html[data-theme="light"] .footer-logo .logo-dark { display: none; }
 html[data-theme="light"] .brand .logo-light,
