@@ -73,21 +73,88 @@ document.addEventListener('keydown', function(e) {
   };
 
   const form = document.getElementById('submission-form');
+  const tabs = [...document.querySelectorAll('.submission-tabs .tab')];
+  const panel = document.getElementById('submission-panel');
+  const communityKicker = document.getElementById('community-kicker');
+  const communityTitle = document.getElementById('community-title');
+  const communityDescription = document.getElementById('community-description');
+  const primaryLabel = document.getElementById('primary-label');
   const primaryInput = document.getElementById('primary-input');
+  const messageLabel = document.getElementById('message-label');
   const messageInput = document.getElementById('message-input');
+  const submissionNote = document.getElementById('submission-note');
   const success = document.getElementById('success');
 
   if (form) {
+    const nameInput = form.querySelector('input[name="name"]');
+    const tiktokInput = form.querySelector('input[name="tiktok"]');
+    const submitButton = form.querySelector('button[type="submit"]');
+    const inputs = [primaryInput, messageInput, nameInput, tiktokInput];
+    const drafts = new Map();
+    let activeType = 'game';
+    let sending = false;
+    const configs = {
+      game: {title:'What should Claui play next?',description:'Send a game request, suggest content, or share a story for the live. Choose a tab below.',label:'Game title',placeholder:'Game name, e.g. Resident Evil 7',messageLabel:'Why this one? (optional)',messagePlaceholder:'Tell me why I should play it...',button:'Send game request',note:'Requests go straight to Claui’s private community inbox.',sent:'Sent! Your game request is now in Claui’s private inbox. ♡'},
+      content: {title:'What should Claui make next?',description:'Got an idea for a TikTok, a live challenge, or a new series? Drop it here.',label:'Idea title',placeholder:'e.g. Horror challenge night',messageLabel:'Tell me more (optional)',messagePlaceholder:'What would make it fun to watch?',button:'Send content idea',note:'Ideas go straight to Claui’s private community inbox.',sent:'Sent! Your content idea is now in Claui’s private inbox. ♡'},
+      story: {title:'Got a story for the live?',description:'Send a story you’re comfortable with possibly being read during the live podcast segment. Name and TikTok username are optional.',label:'Story title',placeholder:'Give your story a short title',messageLabel:'Your story',messagePlaceholder:'Write your story here...',button:'Send story',note:'Stories go straight to Claui’s private community inbox.',sent:'Sent! Your story is now in Claui’s private inbox. ♡'}
+    };
+    const selectType = (type, saveDraft = true) => {
+      if (sending || !Object.hasOwn(configs, type)) return;
+      // Keep each draft in memory, so changing tabs cannot relabel a story as a game.
+      if (saveDraft) drafts.set(activeType, inputs.map(input => input.value));
+      activeType = type;
+      const config = configs[type];
+      inputs.forEach((input, index) => { input.value = drafts.get(type)?.[index] || ''; });
+      tabs.forEach(tab => {
+        const selected = tab.dataset.type === type;
+        tab.classList.toggle('active', selected);
+        tab.setAttribute('aria-selected', String(selected));
+        tab.tabIndex = selected ? 0 : -1;
+      });
+      panel.setAttribute('aria-labelledby', `submission-tab-${type}`);
+      communityKicker.textContent = type === 'story' ? 'CLAUIPALADESISYON DROPBOX' : 'COMMUNITY DROPBOX';
+      communityTitle.textContent = config.title;
+      communityDescription.textContent = config.description;
+      primaryLabel.textContent = config.label;
+      primaryInput.placeholder = config.placeholder;
+      messageLabel.textContent = config.messageLabel;
+      messageInput.placeholder = config.messagePlaceholder;
+      messageInput.required = type === 'story';
+      messageInput.rows = type === 'story' ? 6 : 3;
+      submitButton.textContent = config.button;
+      submissionNote.textContent = config.note;
+      success.textContent = '';
+    };
+    tabs.forEach((tab, index) => {
+      tab.addEventListener('click', () => selectType(tab.dataset.type));
+      tab.addEventListener('keydown', event => {
+        const target = event.key === 'ArrowRight' ? (index + 1) % tabs.length
+          : event.key === 'ArrowLeft' ? (index + tabs.length - 1) % tabs.length
+          : event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : null;
+        if (target === null || sending) return;
+        event.preventDefault();
+        selectType(tabs[target].dataset.type);
+        tabs[target].focus();
+      });
+    });
+    selectType('game', false);
+
     form.addEventListener('submit', async e => {
       e.preventDefault();
+      if (sending) return;
       const title = primaryInput?.value.trim();
-      const story = messageInput?.value.trim();
-      if (!title || !story) return;
+      const message = messageInput?.value.trim();
+      if (!title || (activeType === 'story' && !message)) return;
 
-      const submitButton = form.querySelector('button[type="submit"]');
-      const nameInput = form.querySelector('input[name="name"]');
-      const tiktokInput = form.querySelector('input[name="tiktok"]');
-      submitButton.disabled = true;
+      const type = activeType;
+      const payload = {
+        type, title, message: message || null,
+        display_name: nameInput?.value.trim() || null,
+        tiktok_username: tiktokInput?.value.trim() || null
+      };
+      sending = true;
+      [...inputs, ...tabs, submitButton].forEach(input => { input.disabled = true; });
+      form.setAttribute('aria-busy', 'true');
       submitButton.textContent = 'Sending…';
       success.textContent = '';
 
@@ -95,22 +162,19 @@ document.addEventListener('keydown', function(e) {
         await api('/community_submissions', {
           method: 'POST',
           headers: { Prefer: 'return=minimal' },
-          body: JSON.stringify({
-            type: 'story',
-            title,
-            message: story,
-            display_name: nameInput?.value.trim() || null,
-            tiktok_username: tiktokInput?.value.trim() || null
-          })
+          body: JSON.stringify(payload)
         });
         form.reset();
-        success.textContent = 'Sent! Your story is now in Claui’s private inbox. ♡';
+        drafts.delete(type);
+        success.textContent = configs[type].sent;
       } catch (error) {
         console.error('Submission failed.', error);
         success.textContent = 'Could not send right now. Please try again.';
       } finally {
-        submitButton.disabled = false;
-        submitButton.textContent = 'Send story';
+        sending = false;
+        [...inputs, ...tabs, submitButton].forEach(input => { input.disabled = false; });
+        form.setAttribute('aria-busy', 'false');
+        submitButton.textContent = configs[type].button;
       }
     });
   }

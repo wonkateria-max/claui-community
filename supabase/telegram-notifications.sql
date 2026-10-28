@@ -162,4 +162,5 @@ end $$;
 revoke all on function claui_private.queue_telegram_entry() from public, anon, authenticated;
 create trigger telegram_vote_insert after insert on public.poll_votes for each row execute function claui_private.queue_telegram_entry();
 create trigger telegram_submission_insert after insert on public.submissions for each row execute function claui_private.queue_telegram_entry();
+create trigger telegram_community_submission_insert after insert on public.community_submissions for each row execute function claui_private.queue_telegram_entry();
 select cron.schedule('claui-telegram-delivery','* * * * *','select claui_private.deliver_telegram()');
