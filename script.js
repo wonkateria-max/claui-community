@@ -99,7 +99,7 @@ document.addEventListener('keydown', function(e) {
       content: {title:'What should Claui make next?',description:'Got an idea for a TikTok, a live challenge, or a new series? Drop it here.',label:'Idea title',placeholder:'e.g. Horror challenge night',messageLabel:'Tell me more (optional)',messagePlaceholder:'What would make it fun to watch?',button:'Send content idea',note:'Ideas go straight to Claui’s private community inbox.',sent:'Sent! Your content idea is now in Claui’s private inbox. ♡'},
       story: {title:'Got a story for the live?',description:'Send a story you’re comfortable with possibly being read during the live podcast segment. Name and TikTok username are optional.',label:'Story title',placeholder:'Give your story a short title',messageLabel:'Your story',messagePlaceholder:'Write your story here...',button:'Send story',note:'Stories go straight to Claui’s private community inbox.',sent:'Sent! Your story is now in Claui’s private inbox. ♡'}
     };
-    const messageLimits = { game: 5000, content: 5000, story: 30000 };
+    const messageLimits = { game: 5000, content: 5000, story: 50000 };
     const updateMessageCount = () => {
       if (messageCount) {
         messageCount.textContent = `${messageInput.value.length.toLocaleString('en-US')} / ${messageLimits[activeType].toLocaleString('en-US')} characters`;
