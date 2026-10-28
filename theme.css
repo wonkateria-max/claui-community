@@ -43,6 +43,8 @@
 .theme-picker button:hover:not([aria-pressed="true"]) { background: var(--theme-soft); color: var(--theme-text); }
 .theme-picker button:focus-visible { outline: 2px solid #ef5367; outline-offset: 3px; }
 .theme-picker svg { width: 14px; height: 14px; flex: 0 0 14px; }
+.brand .logo-light,
+.footer-logo .logo-light { display: none; }
 
 html[data-theme="light"] {
   color-scheme: light;
@@ -62,7 +64,11 @@ html[data-theme="light"] .nav a { color: var(--theme-muted); }
 html[data-theme="light"] .nav a:hover,
 html[data-theme="light"] .nav a.active { color: var(--theme-text); }
 html[data-theme="light"] .brand,
-html[data-theme="light"] .footer-logo { background: #101014; padding: 7px 10px; border-radius: 10px; }
+html[data-theme="light"] .footer-logo { background: transparent; padding: 0; border-radius: 0; }
+html[data-theme="light"] .brand .logo-dark,
+html[data-theme="light"] .footer-logo .logo-dark { display: none; }
+html[data-theme="light"] .brand .logo-light,
+html[data-theme="light"] .footer-logo .logo-light { display: block; mix-blend-mode: multiply; }
 html[data-theme="light"] .hero-text,
 html[data-theme="light"] .broadcast-copy p,
 html[data-theme="light"] .request-side > p,
