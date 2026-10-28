@@ -14,7 +14,7 @@ function mount({fail=false,delay=false}={}) {
     fire(name,event={}){return this.listeners.get(name)?.({preventDefault(){},...event});}
     focus(){focused=this;}
   }
-  const ids=new Map(['submission-form','submission-panel','community-kicker','community-title','community-description','primary-label','primary-input','message-label','message-input','submission-note','success'].map(id=>[id,new Element()]));
+  const ids=new Map(['submission-form','submission-panel','community-kicker','community-title','community-description','primary-label','primary-input','message-label','message-input','message-count','submission-note','success'].map(id=>[id,new Element()]));
   const name=new Element(),tiktok=new Element(),button=new Element();
   const form=ids.get('submission-form');
   const inputs=[ids.get('primary-input'),ids.get('message-input'),name,tiktok];
@@ -76,4 +76,38 @@ test('keyboard tab navigation updates selection, focus and the associated form',
   assert.equal(page.tabs[2].attrs['aria-selected'],'true');assert.equal(page.tabs[2].tabIndex,0);assert.equal(page.tabs[0].tabIndex,-1);
   assert.equal(page.focused(),page.tabs[2]);assert.equal(page.ids.get('submission-panel').attrs['aria-labelledby'],'submission-tab-story');
   page.tabs[2].fire('keydown',{key:'ArrowRight'});assert.equal(page.tabs[0].attrs['aria-selected'],'true');
+});
+test('a 30,000-character story is sent intact and its counter resets after success',async()=>{
+  const page=mount();page.click('story');
+  const story='A long story.\n'.repeat(2308).slice(0,30000);
+  page.inputs[0].value='A longer story';page.inputs[1].value=story;
+  page.inputs[1].fire('input');
+  assert.equal(page.inputs[1].maxLength,30000);
+  assert.equal(page.ids.get('message-count').textContent,'30,000 / 30,000 characters');
+  await page.submit();
+  assert.equal(page.calls.length,1);
+  assert.equal(page.calls[0].body.message,story);
+  assert.equal(page.ids.get('message-count').textContent,'0 / 30,000 characters');
+});
+test('long story drafts and their counts survive changing tabs and a failed send',async()=>{
+  const page=mount({fail:true});page.click('story');
+  const story='Story with a full reaction 😱.\n'.repeat(600);
+  page.inputs[0].value='Story draft';page.inputs[1].value=story;
+  page.click('game');assert.equal(page.inputs[1].maxLength,5000);
+  assert.equal(page.ids.get('message-count').textContent,'0 / 5,000 characters');
+  page.click('story');assert.equal(page.inputs[1].value,story);
+  assert.equal(page.ids.get('message-count').textContent,`${story.length.toLocaleString('en-US')} / 30,000 characters`);
+  await page.submit();
+  assert.equal(page.calls[0].body.message,story.trim());
+  assert.equal(page.inputs[1].value,story);
+});
+test('over-limit text is rejected without clearing the draft or sending a request',async()=>{
+  for(const [type,limit] of [['story',30000],['game',5000],['content',5000]]){
+    const page=mount();page.click(type);page.inputs[0].value='Draft';
+    page.inputs[1].value='x'.repeat(limit+1);
+    await page.submit();
+    assert.equal(page.calls.length,0);
+    assert.equal(page.inputs[1].value.length,limit+1);
+    assert.match(page.ids.get('success').textContent,/Your draft is still here/);
+  }
 });

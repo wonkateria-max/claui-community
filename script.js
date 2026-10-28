@@ -82,6 +82,7 @@ document.addEventListener('keydown', function(e) {
   const primaryInput = document.getElementById('primary-input');
   const messageLabel = document.getElementById('message-label');
   const messageInput = document.getElementById('message-input');
+  const messageCount = document.getElementById('message-count');
   const submissionNote = document.getElementById('submission-note');
   const success = document.getElementById('success');
 
@@ -98,6 +99,13 @@ document.addEventListener('keydown', function(e) {
       content: {title:'What should Claui make next?',description:'Got an idea for a TikTok, a live challenge, or a new series? Drop it here.',label:'Idea title',placeholder:'e.g. Horror challenge night',messageLabel:'Tell me more (optional)',messagePlaceholder:'What would make it fun to watch?',button:'Send content idea',note:'Ideas go straight to Claui’s private community inbox.',sent:'Sent! Your content idea is now in Claui’s private inbox. ♡'},
       story: {title:'Got a story for the live?',description:'Send a story you’re comfortable with possibly being read during the live podcast segment. Name and TikTok username are optional.',label:'Story title',placeholder:'Give your story a short title',messageLabel:'Your story',messagePlaceholder:'Write your story here...',button:'Send story',note:'Stories go straight to Claui’s private community inbox.',sent:'Sent! Your story is now in Claui’s private inbox. ♡'}
     };
+    const messageLimits = { game: 5000, content: 5000, story: 30000 };
+    const updateMessageCount = () => {
+      if (messageCount) {
+        messageCount.textContent = `${messageInput.value.length.toLocaleString('en-US')} / ${messageLimits[activeType].toLocaleString('en-US')} characters`;
+      }
+    };
+    messageInput.addEventListener('input', updateMessageCount);
     const selectType = (type, saveDraft = true) => {
       if (sending || !Object.hasOwn(configs, type)) return;
       // Keep each draft in memory, so changing tabs cannot relabel a story as a game.
@@ -121,6 +129,8 @@ document.addEventListener('keydown', function(e) {
       messageInput.placeholder = config.messagePlaceholder;
       messageInput.required = type === 'story';
       messageInput.rows = type === 'story' ? 6 : 3;
+      messageInput.maxLength = messageLimits[type];
+      updateMessageCount();
       submitButton.textContent = config.button;
       submissionNote.textContent = config.note;
       success.textContent = '';
@@ -145,6 +155,10 @@ document.addEventListener('keydown', function(e) {
       const title = primaryInput?.value.trim();
       const message = messageInput?.value.trim();
       if (!title || (activeType === 'story' && !message)) return;
+      if (messageInput.value.length > messageLimits[activeType]) {
+        success.textContent = `Please keep your ${activeType === 'story' ? 'story' : 'message'} within ${messageLimits[activeType].toLocaleString('en-US')} characters. Your draft is still here.`;
+        return;
+      }
 
       const type = activeType;
       const payload = {
@@ -165,6 +179,7 @@ document.addEventListener('keydown', function(e) {
           body: JSON.stringify(payload)
         });
         form.reset();
+        updateMessageCount();
         drafts.delete(type);
         success.textContent = configs[type].sent;
       } catch (error) {

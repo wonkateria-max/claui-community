@@ -26,11 +26,11 @@
 <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png"/>
 <link rel="icon" type="image/svg+xml" href="assets/claui-logo.svg"/>
 <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png"/>
-<link href="styles.css?v=20261028-requests1" rel="stylesheet"/>
+<link href="styles.css?v=20261029-stories1" rel="stylesheet"/>
 <link href="about-clean.css" rel="stylesheet"/>
 <link href="live-status.css?v=20261026-auto1" rel="stylesheet"/>
 <link href="community-highlights.css?v=20261026-4" rel="stylesheet"/>
-<script defer="true" src="script.js?v=20261028-requests1"></script>
+<script defer="true" src="script.js?v=20261029-stories1"></script>
 <script defer="true" src="live-status.js?v=20261026-auto1"></script>
 <script defer src="community-highlights.js?v=20261026-4"></script>
 </head>
@@ -51,7 +51,7 @@
     <div id="submission-panel" role="tabpanel" aria-labelledby="submission-tab-game">
       <form class="quick-form" id="submission-form">
         <label><span id="primary-label">Game title</span><input id="primary-input" name="primary" placeholder="Game name, e.g. Resident Evil 7" maxlength="160" required/></label>
-        <label><span id="message-label">Why this one? (optional)</span><textarea id="message-input" name="message" placeholder="Tell me why I should play it..." rows="3" maxlength="5000"></textarea></label>
+        <label><span id="message-label">Why this one? (optional)</span><textarea id="message-input" name="message" placeholder="Tell me why I should play it..." rows="3" maxlength="5000" aria-describedby="message-count"></textarea><small class="message-count" id="message-count">0 / 5,000 characters</small></label>
         <div class="form-inline"><input aria-label="Your name" name="name" placeholder="Name (optional)" maxlength="80"/><input aria-label="TikTok username" name="tiktok" placeholder="@username (optional)" maxlength="80"/><button type="submit">Send game request</button></div>
         <p class="note" id="submission-note">Requests go straight to Claui’s private community inbox.</p>
         <div aria-live="polite" class="success" id="success" role="status"></div>
