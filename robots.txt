@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://claui-community.pages.dev/sitemap.xml
