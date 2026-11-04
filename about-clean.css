@@ -110,3 +110,38 @@
     padding:13px 14px !important;
   }
 }
+
+/* Compact, early-access About panel on phones without changing desktop cards. */
+@media (max-width: 760px) {
+  #about { scroll-margin-top: 80px; }
+  .about {
+    margin: 6px auto 24px !important;
+    padding: 18px !important;
+    gap: 12px !important;
+  }
+  .about-text { font-size: .84rem !important; line-height: 1.55 !important; }
+  .link-stack {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+  .link-stack a {
+    min-width: 0 !important;
+    min-height: 68px !important;
+    padding: 11px 12px !important;
+    gap: 4px !important;
+  }
+  .link-stack b { font-size: .8rem !important; }
+  .link-stack span {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    font-size: .66rem !important;
+  }
+  .link-stack em { font-size: .65rem !important; }
+}
+@media (max-width: 380px) {
+  .link-stack a { padding: 10px !important; }
+  .link-stack em { display: none !important; }
+}
