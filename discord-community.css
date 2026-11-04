@@ -1,0 +1,51 @@
+/* Claui Discord invite – uses the existing light/dark theme tokens. */
+.discord-invite {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 16px;
+  padding: 24px 28px;
+  border: 1px solid var(--theme-border);
+  border-radius: 20px;
+  background: var(--theme-surface);
+}
+.discord-invite-copy { min-width: 0; }
+.discord-invite .mini-label { margin: 0 0 8px; }
+.discord-invite h3 {
+  margin: 0;
+  color: var(--theme-text);
+  font-size: clamp(1.2rem, 2.5vw, 1.65rem);
+  letter-spacing: -.025em;
+  line-height: 1.2;
+}
+.discord-invite-copy > p:last-child {
+  margin: 8px 0 0;
+  color: var(--theme-muted);
+  font-size: .88rem;
+  line-height: 1.55;
+}
+.discord-invite-link {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 12px 19px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: var(--theme-selected);
+  color: var(--theme-selected-text);
+  font-size: .84rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-decoration: none;
+  transition: opacity .2s ease, transform .2s ease;
+}
+.discord-invite-link:hover { opacity: .88; transform: translateY(-2px); }
+.discord-invite-link:focus-visible { outline: 2px solid #ef5367; outline-offset: 3px; }
+@media (max-width: 640px) {
+  .discord-invite { flex-direction: column; align-items: stretch; gap: 18px; padding: 20px 18px; border-radius: 18px; }
+  .discord-invite-link { width: 100%; }
+}
