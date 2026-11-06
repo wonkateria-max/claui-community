@@ -6,7 +6,7 @@
 
   const pollStyles = document.createElement('link');
   pollStyles.rel = 'stylesheet';
-  pollStyles.href = 'poll.css?v=20261106-voting1';
+  pollStyles.href = 'poll.css?v=20261106-confetti1';
   document.head.appendChild(pollStyles);
 })();
 
@@ -258,7 +258,7 @@ document.addEventListener('keydown', function(e) {
           <span class="poll-title"></span>
           <div class="poll-meta"><span class="vote-count"><strong>0</strong> <span class="vote-unit">votes</span></span><span class="poll-percent"></span><em class="leader-badge">Leading</em></div>
         </div></div>
-        <button class="vote" type="button" aria-pressed="false"><span class="vote-spinner" aria-hidden="true"></span><svg class="vote-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path/></svg><span class="vote-label">Vote</span><span class="vote-gain" aria-hidden="true">+1</span></button>
+        <button class="vote" type="button" aria-pressed="false"><svg class="vote-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path/></svg><span class="vote-label">Vote</span><span class="vote-gain" aria-hidden="true">+1</span></button>
       </div>
       <div class="poll-track" aria-hidden="true"><i class="poll-fill"></i></div>`;
     row.querySelector('.vote').addEventListener('click', () => castVote(option.id));
@@ -290,7 +290,6 @@ document.addEventListener('keydown', function(e) {
       const pending = pendingOptionId === option.id;
       row.classList.toggle('is-leading', max > 0 && count === max);
       row.classList.toggle('is-selected', selected);
-      row.classList.toggle('is-pending', pending);
       row.querySelector('.poll-order').textContent = String(index + 1).padStart(2, '0');
       row.querySelector('.poll-title').textContent = option.title;
       row.querySelector('.vote-count strong').textContent = number(count);
@@ -303,7 +302,7 @@ document.addEventListener('keydown', function(e) {
       button.setAttribute('aria-pressed', String(selected));
       button.setAttribute('aria-busy', String(pending));
       button.setAttribute('aria-label', selected ? `Voted for ${option.title}` : `Vote for ${option.title}`);
-      row.querySelector('.vote-label').textContent = pending ? 'Saving…' : selected ? 'Voted' : 'Vote';
+      row.querySelector('.vote-label').textContent = selected ? 'Voted' : 'Vote';
       row.querySelector('.vote-icon path').setAttribute('d', selected ? 'M5 12l4 4L19 6' : 'M12 5v14M5 12h14');
       // Preserve focus and bar transitions when shared totals refresh.
       if (list.children[index] !== row) list.insertBefore(row, list.children[index] || null);
@@ -316,6 +315,35 @@ document.addEventListener('keydown', function(e) {
     }
   };
 
+  const burstConfetti = button => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const bounds = button.getBoundingClientRect();
+    const burst = document.createElement('div');
+    burst.className = 'vote-confetti';
+    burst.setAttribute('aria-hidden', 'true');
+    const colors = ['#ef5367', '#ffc857', '#b69bff', '#6ed3be', 'var(--theme-text, #f3f1ec)'];
+    for (let index = 0; index < 24; index++) {
+      const angle = Math.PI + (index / 23) * Math.PI;
+      const distance = 45 + Math.random() * 65;
+      const drift = Math.cos(angle) * distance;
+      const piece = document.createElement('i');
+      piece.className = 'vote-confetti-piece';
+      piece.style.left = `${bounds.left + bounds.width / 2}px`;
+      piece.style.top = `${bounds.top + bounds.height / 2}px`;
+      piece.style.setProperty('--confetti-color', colors[index % colors.length]);
+      piece.style.setProperty('--confetti-mid-x', `${drift * .65}px`);
+      piece.style.setProperty('--confetti-x', `${drift}px`);
+      piece.style.setProperty('--confetti-lift', `${Math.sin(angle) * (45 + Math.random() * 55) - 24}px`);
+      piece.style.setProperty('--confetti-drop', `${30 + Math.random() * 55}px`);
+      piece.style.setProperty('--confetti-turn', `${(Math.random() - .5) * 720}deg`);
+      piece.style.animationDuration = `${800 + Math.random() * 250}ms`;
+      piece.style.animationDelay = `${Math.random() * 70}ms`;
+      burst.appendChild(piece);
+    }
+    document.body.appendChild(burst);
+    setTimeout(() => burst.remove(), 1200);
+  };
+
   const celebrateVote = optionId => {
     const row = rows.get(optionId);
     if (!row) return;
@@ -323,6 +351,7 @@ document.addEventListener('keydown', function(e) {
     row.classList.remove('vote-confirmed');
     void row.offsetWidth; // Restart confirmation when a viewer moves their vote back.
     row.classList.add('vote-confirmed');
+    burstConfetti(row.querySelector('.vote'));
     celebrationTimers.set(optionId, setTimeout(() => {
       row.classList.remove('vote-confirmed');
       celebrationTimers.delete(optionId);
@@ -355,10 +384,14 @@ document.addEventListener('keydown', function(e) {
     if (!option) return;
     const button = rows.get(optionId)?.querySelector('.vote');
     const restoreFocus = document.activeElement === button;
+    const row = rows.get(optionId);
+    row.classList.add('vote-pressed');
+    setTimeout(() => row.classList.remove('vote-pressed'), 220);
     pendingOptionId = optionId;
     ++resultRequest; // Ignore an older refresh arriving while this vote is saving.
-    setStatus('Saving your vote…');
+    setStatus();
     renderPoll();
+    let saved = false;
     try {
       await api('/rpc/cast_vote', {
         method: 'POST',
@@ -366,22 +399,24 @@ document.addEventListener('keydown', function(e) {
       });
       selectedOptionId = optionId;
       saveStored(selectedKey(), selectedOptionId);
-      try {
-        await loadResults();
-        totalsStale = false;
-        setStatus(`Vote saved for ${option.title}.`);
-      } catch (_) {
-        totalsStale = true;
-        setStatus('Your vote is saved. Totals will refresh when the connection returns.');
-      }
-      celebrateVote(optionId);
+      saved = true;
+      setStatus(`Vote saved for ${option.title}.`);
     } catch (error) {
       console.error('Vote failed.', error);
       setStatus('Could not save your vote. Please try again.', true);
     } finally {
       pendingOptionId = '';
       renderPoll();
-      if (restoreFocus && (document.activeElement === document.body || document.activeElement === button)) button.focus({ preventScroll: true });
+      if (restoreFocus && document.hasFocus() && (document.activeElement === document.body || document.activeElement === button)) button.focus({ preventScroll: true });
+    }
+    if (!saved) return;
+    celebrateVote(optionId);
+    // Celebrate as soon as the vote saves; fetching totals never holds up the button.
+    try {
+      if (await loadResults()) totalsStale = false;
+    } catch (_) {
+      totalsStale = true;
+      setStatus('Your vote is saved. Totals will refresh when the connection returns.');
     }
   };
 
