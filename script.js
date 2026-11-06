@@ -6,7 +6,7 @@
 
   const pollStyles = document.createElement('link');
   pollStyles.rel = 'stylesheet';
-  pollStyles.href = 'poll.css?v=20261106-confetti1';
+  pollStyles.href = 'poll.css?v=20261106-send-effects1';
   document.head.appendChild(pollStyles);
 })();
 
@@ -72,6 +72,35 @@ document.addEventListener('keydown', function(e) {
     return text ? JSON.parse(text) : null;
   };
 
+  const burstConfetti = button => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const bounds = button.getBoundingClientRect();
+    const burst = document.createElement('div');
+    burst.className = 'vote-confetti';
+    burst.setAttribute('aria-hidden', 'true');
+    const colors = ['#ef5367', '#ffc857', '#b69bff', '#6ed3be', 'var(--theme-text, #f3f1ec)'];
+    for (let index = 0; index < 24; index++) {
+      const angle = Math.PI + (index / 23) * Math.PI;
+      const distance = 45 + Math.random() * 65;
+      const drift = Math.cos(angle) * distance;
+      const piece = document.createElement('i');
+      piece.className = 'vote-confetti-piece';
+      piece.style.left = `${bounds.left + bounds.width / 2}px`;
+      piece.style.top = `${bounds.top + bounds.height / 2}px`;
+      piece.style.setProperty('--confetti-color', colors[index % colors.length]);
+      piece.style.setProperty('--confetti-mid-x', `${drift * .65}px`);
+      piece.style.setProperty('--confetti-x', `${drift}px`);
+      piece.style.setProperty('--confetti-lift', `${Math.sin(angle) * (45 + Math.random() * 55) - 24}px`);
+      piece.style.setProperty('--confetti-drop', `${30 + Math.random() * 55}px`);
+      piece.style.setProperty('--confetti-turn', `${(Math.random() - .5) * 720}deg`);
+      piece.style.animationDuration = `${800 + Math.random() * 250}ms`;
+      piece.style.animationDelay = `${Math.random() * 70}ms`;
+      burst.appendChild(piece);
+    }
+    document.body.appendChild(burst);
+    setTimeout(() => burst.remove(), 1200);
+  };
+
   const form = document.getElementById('submission-form');
   const tabs = [...document.querySelectorAll('.submission-tabs .tab')];
   const panel = document.getElementById('submission-panel');
@@ -94,6 +123,7 @@ document.addEventListener('keydown', function(e) {
     const drafts = new Map();
     let activeType = 'game';
     let sending = false;
+    let confirmationTimer;
     const configs = {
       game: {title:'What should Claui play next?',description:'Send a game request, suggest content, or share a story for the live. Choose a tab below.',label:'Game title',placeholder:'Game name, e.g. Resident Evil 7',messageLabel:'Why this one? (optional)',messagePlaceholder:'Tell me why I should play it...',button:'Send game request',note:'Requests go straight to Claui’s private community inbox.',sent:'Sent! Your game request is now in Claui’s private inbox. ♡'},
       content: {title:'What should Claui make next?',description:'Got an idea for a TikTok, a live challenge, or a new series? Drop it here.',label:'Idea title',placeholder:'e.g. Horror challenge night',messageLabel:'Tell me more (optional)',messagePlaceholder:'What would make it fun to watch?',button:'Send content idea',note:'Ideas go straight to Claui’s private community inbox.',sent:'Sent! Your content idea is now in Claui’s private inbox. ♡'},
@@ -108,6 +138,9 @@ document.addEventListener('keydown', function(e) {
     messageInput.addEventListener('input', updateMessageCount);
     const selectType = (type, saveDraft = true) => {
       if (sending || !Object.hasOwn(configs, type)) return;
+      clearTimeout(confirmationTimer);
+      submitButton.classList.remove('send-confirmed');
+      submitButton.classList.remove('send-pressed');
       // Keep each draft in memory, so changing tabs cannot relabel a story as a game.
       if (saveDraft) drafts.set(activeType, inputs.map(input => input.value));
       activeType = type;
@@ -161,6 +194,10 @@ document.addEventListener('keydown', function(e) {
       }
 
       const type = activeType;
+      clearTimeout(confirmationTimer);
+      submitButton.classList.remove('send-confirmed');
+      submitButton.classList.add('send-pressed');
+      setTimeout(() => submitButton.classList.remove('send-pressed'), 220);
       const payload = {
         type, title, message: message || null,
         display_name: nameInput?.value.trim() || null,
@@ -169,8 +206,9 @@ document.addEventListener('keydown', function(e) {
       sending = true;
       [...inputs, ...tabs, submitButton].forEach(input => { input.disabled = true; });
       form.setAttribute('aria-busy', 'true');
-      submitButton.textContent = 'Sending…';
+      submitButton.textContent = configs[type].button;
       success.textContent = '';
+      let submitted = false;
 
       try {
         await api('/community_submissions', {
@@ -182,6 +220,7 @@ document.addEventListener('keydown', function(e) {
         updateMessageCount();
         drafts.delete(type);
         success.textContent = configs[type].sent;
+        submitted = true;
       } catch (error) {
         console.error('Submission failed.', error);
         success.textContent = 'Could not send right now. Please try again.';
@@ -190,6 +229,11 @@ document.addEventListener('keydown', function(e) {
         [...inputs, ...tabs, submitButton].forEach(input => { input.disabled = false; });
         form.setAttribute('aria-busy', 'false');
         submitButton.textContent = configs[type].button;
+      }
+      if (submitted) {
+        submitButton.classList.add('send-confirmed');
+        burstConfetti(submitButton);
+        confirmationTimer = setTimeout(() => submitButton.classList.remove('send-confirmed'), 900);
       }
     });
   }
@@ -313,35 +357,6 @@ document.addEventListener('keydown', function(e) {
       empty.textContent = 'No picks open yet. Check back soon.';
       list.appendChild(empty);
     }
-  };
-
-  const burstConfetti = button => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const bounds = button.getBoundingClientRect();
-    const burst = document.createElement('div');
-    burst.className = 'vote-confetti';
-    burst.setAttribute('aria-hidden', 'true');
-    const colors = ['#ef5367', '#ffc857', '#b69bff', '#6ed3be', 'var(--theme-text, #f3f1ec)'];
-    for (let index = 0; index < 24; index++) {
-      const angle = Math.PI + (index / 23) * Math.PI;
-      const distance = 45 + Math.random() * 65;
-      const drift = Math.cos(angle) * distance;
-      const piece = document.createElement('i');
-      piece.className = 'vote-confetti-piece';
-      piece.style.left = `${bounds.left + bounds.width / 2}px`;
-      piece.style.top = `${bounds.top + bounds.height / 2}px`;
-      piece.style.setProperty('--confetti-color', colors[index % colors.length]);
-      piece.style.setProperty('--confetti-mid-x', `${drift * .65}px`);
-      piece.style.setProperty('--confetti-x', `${drift}px`);
-      piece.style.setProperty('--confetti-lift', `${Math.sin(angle) * (45 + Math.random() * 55) - 24}px`);
-      piece.style.setProperty('--confetti-drop', `${30 + Math.random() * 55}px`);
-      piece.style.setProperty('--confetti-turn', `${(Math.random() - .5) * 720}deg`);
-      piece.style.animationDuration = `${800 + Math.random() * 250}ms`;
-      piece.style.animationDelay = `${Math.random() * 70}ms`;
-      burst.appendChild(piece);
-    }
-    document.body.appendChild(burst);
-    setTimeout(() => burst.remove(), 1200);
   };
 
   const celebrateVote = optionId => {

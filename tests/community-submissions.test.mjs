@@ -8,7 +8,7 @@ function mount({fail=false,delay=false}={}) {
   let focused=null,release;
   const calls=[];
   class Element {
-    constructor(){this.value='';this.textContent='';this.disabled=false;this.listeners=new Map();this.attrs={};this.classes=new Set();this.classList={toggle:(name,on)=>on?this.classes.add(name):this.classes.delete(name)};}
+    constructor(){this.value='';this.textContent='';this.disabled=false;this.listeners=new Map();this.attrs={};this.classes=new Set();this.classList={toggle:(name,on)=>on?this.classes.add(name):this.classes.delete(name),add:name=>this.classes.add(name),remove:name=>this.classes.delete(name)};}
     setAttribute(name,value){this.attrs[name]=value;}
     addEventListener(name,fn){this.listeners.set(name,fn);}
     fire(name,event={}){return this.listeners.get(name)?.({preventDefault(){},...event});}
@@ -25,6 +25,7 @@ function mount({fail=false,delay=false}={}) {
     document:{head:{appendChild(){}},createElement:()=>new Element(),querySelector:()=>null,
       querySelectorAll:()=>tabs,getElementById:id=>ids.get(id)||null,addEventListener(){}},
     console:{error(){}},
+    window:{matchMedia:()=>({matches:true})},setTimeout:()=>0,clearTimeout(){},
     fetch:async(url,init)=>{
       calls.push({url,body:JSON.parse(init.body),headers:init.headers});
       if(delay)await new Promise(resolve=>{release=resolve;});

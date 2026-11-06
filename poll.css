@@ -33,6 +33,13 @@
 .vote-confirmed .vote::after { content: ""; position: absolute; inset: -1px; border: 1px solid #ef5367; border-radius: inherit; pointer-events: none; animation: vote-ring .65s ease-out both; }
 .vote-confirmed .vote-gain { animation: vote-gain .8s ease-out both; }
 .vote-confirmed .vote-count strong { animation: vote-count-pop .45s ease-out; }
+.quick-form button { position: relative; transition: transform .14s; }
+.quick-form button:active:not(:disabled) { transform: scale(.95); }
+.quick-form button:focus-visible { outline: 2px solid #ef5367; outline-offset: 4px; }
+.quick-form button.send-pressed { animation: vote-press .22s ease-out; }
+.quick-form button.send-confirmed { animation: vote-pop .42s cubic-bezier(.2,.8,.3,1); }
+.quick-form button.send-confirmed::before { content: ""; position: absolute; inset: -1px; border: 1px solid #ef5367; border-radius: inherit; pointer-events: none; animation: vote-ring .65s ease-out both; }
+.quick-form button.send-confirmed::after { content: "✓"; position: absolute; top: -8px; right: -5px; display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: #ef5367; color: #070708; font-size: .75rem; font-weight: 800; line-height: 1; pointer-events: none; animation: send-check .9s ease-out both; }
 .poll-status { margin: 12px 0 0; color: var(--theme-muted, #a6a6b0); font-size: .7rem; line-height: 1.5; overflow-wrap: anywhere; }
 .poll-status:empty { display: none; }
 .poll-status.is-error { color: #ff8796; }
@@ -55,6 +62,7 @@ html[data-theme="light"] .poll-status.is-error { color: #a51e35; }
 @keyframes vote-ring { from { opacity: .7; transform: scale(1); } to { opacity: 0; transform: scale(1.22,1.35); } }
 @keyframes vote-gain { 0% { opacity: 0; transform: translateY(5px) scale(.7); } 22%,65% { opacity: 1; transform: translateY(-3px) scale(1); } 100% { opacity: 0; transform: translateY(-14px) scale(1); } }
 @keyframes vote-count-pop { 0%,100% { transform: scale(1); } 45% { transform: scale(1.2); } }
+@keyframes send-check { 0% { opacity: 0; transform: translateY(3px) scale(.6); } 20%,75% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-8px) scale(.8); } }
 @media (max-width: 640px) {
   .poll-summary { gap: 12px; padding: 12px; }
   .poll-summary p { font-size: .68rem; }
@@ -65,8 +73,9 @@ html[data-theme="light"] .poll-status.is-error { color: #a51e35; }
   .poll-list .vote { min-width: 80px; padding-inline: 10px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .poll-fill, .poll-list .vote { transition: none; }
-  .poll-list .vote:active:not(:disabled) { transform: none; }
+  .poll-fill, .poll-list .vote, .quick-form button { transition: none; }
+  .poll-list .vote:active:not(:disabled), .quick-form button:active:not(:disabled) { transform: none; }
+  .quick-form button.send-pressed, .quick-form button.send-confirmed, .quick-form button.send-confirmed::before, .quick-form button.send-confirmed::after { animation: none; }
   .vote-pressed .vote, .vote-confirmed .vote, .vote-confirmed .vote::after, .vote-confirmed .vote-gain, .vote-confirmed .vote-count strong, .vote-confetti-piece { animation: none; }
   .vote-confetti { display: none; }
 }
