@@ -6,43 +6,32 @@
   --theme-text: #f3f1ec;
   --theme-muted: #a6a6b0;
   --theme-border: #34343d;
-  --theme-selected: #f3f1ec;
-  --theme-selected-text: #101014;
 }
 
-.theme-picker {
+.theme-toggle {
+  position: relative;
   display: inline-flex;
   flex: 0 0 auto;
   align-items: center;
-  gap: 2px;
-  padding: 3px;
-  border: 1px solid var(--theme-border);
-  border-radius: 999px;
-  background: var(--theme-surface);
-}
-.theme-picker button {
-  display: inline-flex;
-  align-items: center;
   justify-content: center;
-  gap: 6px;
-  min-height: 32px;
-  padding: 6px 10px;
-  border: 0;
-  border-radius: 999px;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid var(--theme-border);
+  border-radius: 50%;
   background: transparent;
   color: var(--theme-muted);
-  font: inherit;
-  font-size: .7rem;
-  font-weight: 650;
   cursor: pointer;
+  touch-action: manipulation;
 }
-.theme-picker button[aria-pressed="true"] {
-  background: var(--theme-selected);
-  color: var(--theme-selected-text);
-}
-.theme-picker button:hover:not([aria-pressed="true"]) { background: var(--theme-soft); color: var(--theme-text); }
-.theme-picker button:focus-visible { outline: 2px solid #ef5367; outline-offset: 3px; }
-.theme-picker svg { width: 14px; height: 14px; flex: 0 0 14px; }
+/* Keep the visible control small with a 44px touch target. */
+.theme-toggle::before { content: ""; position: absolute; inset: -4px; border-radius: inherit; }
+.theme-toggle:hover { background: var(--theme-soft); color: var(--theme-text); }
+.theme-toggle:focus-visible { outline: 2px solid #ef5367; outline-offset: 3px; }
+.theme-toggle svg { width: 17px; height: 17px; pointer-events: none; }
+.theme-toggle .theme-moon { display: none; }
+html[data-theme="light"] .theme-toggle .theme-sun { display: none; }
+html[data-theme="light"] .theme-toggle .theme-moon { display: block; }
 .brand .logo-light,
 .footer-logo .logo-light { display: none; }
 
@@ -54,8 +43,6 @@ html[data-theme="light"] {
   --theme-text: #211f24;
   --theme-muted: #625d67;
   --theme-border: #d9d4cd;
-  --theme-selected: #211f24;
-  --theme-selected-text: #fff;
 }
 html[data-theme="light"] body { background: var(--theme-page); color: var(--theme-text); }
 html[data-theme="light"] ::selection { background: #f4cbd2; color: #211f24; }
@@ -170,9 +157,5 @@ html[data-theme="light"] .footer { color: #6d6672; }
 
 @media (max-width: 640px) {
   .nav-wrap { gap: 14px; }
-  .theme-picker { margin-left: auto; }
-}
-@media (max-width: 380px) {
-  .theme-picker button { padding-inline: 9px; }
-  .theme-picker button span { display: none; }
+  .theme-toggle { margin-left: auto; }
 }
