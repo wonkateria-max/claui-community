@@ -6,7 +6,7 @@
 
   const pollStyles = document.createElement('link');
   pollStyles.rel = 'stylesheet';
-  pollStyles.href = 'poll.css?v=20261106-clean-feedback1';
+  pollStyles.href = 'poll.css?v=20261106-send-cats1';
   document.head.appendChild(pollStyles);
 })();
 
@@ -124,6 +124,42 @@ document.addEventListener('keydown', function(e) {
     let activeType = 'game';
     let sending = false;
     let confirmationTimer;
+    let sendCatsLayer = null;
+    let sendCatsTimer;
+    const clearSendCats = () => {
+      clearTimeout(sendCatsTimer);
+      sendCatsLayer?.remove();
+      sendCatsLayer = null;
+    };
+    const showSendCats = () => {
+      clearSendCats();
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      const bounds = submitButton.getBoundingClientRect();
+      const x = Math.max(52, Math.min(window.innerWidth - 52, bounds.left + bounds.width / 2));
+      const y = Math.max(52, bounds.top + 2);
+      const layer = document.createElement('div');
+      layer.className = 'send-cat-layer';
+      layer.setAttribute('aria-hidden', 'true');
+      const cat = `<svg viewBox="0 0 40 40" fill="none" aria-hidden="true" focusable="false"><path d="M8 17 6 5l11 7a17 17 0 0 1 6 0L34 5l-2 12c5 6 4 15-4 18a24 24 0 0 1-16 0C4 32 3 23 8 17Z" fill="#16161d" stroke="var(--theme-text, #f3f1ec)" stroke-width="1.2" stroke-linejoin="round"/><path d="m9 9 1 7 4-2Zm22 0-5 5 4 2Z" fill="#d98d9a"/><ellipse cx="14" cy="23" rx="2.2" ry="2.7" fill="#f5e8bd"/><ellipse cx="26" cy="23" rx="2.2" ry="2.7" fill="#f5e8bd"/><path d="M14 21.5v3m12-3v3" stroke="#16161d" stroke-width="1.2" stroke-linecap="round"/><path d="m18 27 2 2 2-2Z" fill="#e3a1aa"/><path d="M20 29v1m0 0c-1 2-3 2-4 0m4 0c1 2 3 2 4 0" stroke="#e8ddd5" stroke-width=".8" stroke-linecap="round"/><path d="m4 25 6 1m-6 3 6-1m20-2 6-1m-6 3 6 1" stroke="#e8ddd5" stroke-width=".8" stroke-linecap="round"/></svg>`;
+      [-28, 0, 28].forEach((offset, index) => {
+        const glyph = document.createElement('span');
+        glyph.className = 'send-cat-glyph';
+        glyph.style.left = `${x}px`;
+        glyph.style.top = `${y}px`;
+        glyph.style.setProperty('--cat-x', `${offset}px`);
+        glyph.style.setProperty('--cat-rise', index === 1 ? '-48px' : '-34px');
+        glyph.style.setProperty('--cat-tilt', `${offset / 2}deg`);
+        glyph.style.animationDelay = `${index * 65}ms`;
+        glyph.innerHTML = cat;
+        layer.appendChild(glyph);
+      });
+      document.body.appendChild(layer);
+      sendCatsLayer = layer;
+      sendCatsTimer = setTimeout(() => {
+        layer.remove();
+        if (sendCatsLayer === layer) sendCatsLayer = null;
+      }, 1800);
+    };
     const configs = {
       game: {title:'What should Claui play next?',description:'Send a game request, suggest content, or share a story for the live. Choose a tab below.',label:'Game title',placeholder:'Game name, e.g. Resident Evil 7',messageLabel:'Why this one? (optional)',messagePlaceholder:'Tell me why I should play it...',button:'Send game request',note:'Requests go straight to Claui’s private community inbox.',sent:'Sent! Your game request is now in Claui’s private inbox. ♡'},
       content: {title:'What should Claui make next?',description:'Got an idea for a TikTok, a live challenge, or a new series? Drop it here.',label:'Idea title',placeholder:'e.g. Horror challenge night',messageLabel:'Tell me more (optional)',messagePlaceholder:'What would make it fun to watch?',button:'Send content idea',note:'Ideas go straight to Claui’s private community inbox.',sent:'Sent! Your content idea is now in Claui’s private inbox. ♡'},
@@ -139,6 +175,7 @@ document.addEventListener('keydown', function(e) {
     const selectType = (type, saveDraft = true) => {
       if (sending || !Object.hasOwn(configs, type)) return;
       clearTimeout(confirmationTimer);
+      clearSendCats();
       submitButton.classList.remove('send-confirmed');
       submitButton.classList.remove('send-pressed');
       // Keep each draft in memory, so changing tabs cannot relabel a story as a game.
@@ -195,6 +232,7 @@ document.addEventListener('keydown', function(e) {
 
       const type = activeType;
       clearTimeout(confirmationTimer);
+      clearSendCats();
       submitButton.classList.remove('send-confirmed');
       submitButton.classList.add('send-pressed');
       setTimeout(() => submitButton.classList.remove('send-pressed'), 220);
@@ -232,6 +270,7 @@ document.addEventListener('keydown', function(e) {
       }
       if (submitted) {
         submitButton.classList.add('send-confirmed');
+        showSendCats();
         confirmationTimer = setTimeout(() => submitButton.classList.remove('send-confirmed'), 900);
       }
     });

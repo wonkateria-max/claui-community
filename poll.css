@@ -37,6 +37,20 @@
 .quick-form button.send-pressed { animation: vote-press .22s ease-out; }
 .quick-form button.send-confirmed { animation: vote-pop .42s cubic-bezier(.2,.8,.3,1); }
 .quick-form button.send-confirmed::before { content: ""; position: absolute; inset: -1px; border: 1px solid #ef5367; border-radius: inherit; pointer-events: none; animation: vote-ring .65s ease-out both; }
+.send-cat-layer { position: fixed; inset: 0; z-index: 80; overflow: hidden; pointer-events: none; }
+.send-cat-glyph { position: absolute; display: block; width: 30px; height: 30px; margin-left: -15px; opacity: 0; transform-origin: 50% 90%; animation: send-cat-hop 1.45s cubic-bezier(.2,.75,.3,1) both; }
+.send-cat-glyph:nth-child(2) { width: 36px; height: 36px; margin-left: -18px; }
+.send-cat-glyph svg { display: block; width: 100%; height: 100%; }
+@keyframes send-cat-hop {
+  0% { opacity: 0; transform: translate3d(0,12px,0) rotate(0) scale(.45); }
+  22% { opacity: 1; transform: translate3d(var(--cat-x),var(--cat-rise),0) rotate(var(--cat-tilt)) scale(1.08); }
+  38%,70% { opacity: 1; transform: translate3d(var(--cat-x),calc(var(--cat-rise) + 6px),0) rotate(var(--cat-tilt)) scale(1); }
+  100% { opacity: 0; transform: translate3d(var(--cat-x),6px,0) rotate(0) scale(.6); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .send-cat-layer { display: none; }
+  .send-cat-glyph { animation: none; }
+}
 .poll-status { margin: 12px 0 0; color: var(--theme-muted, #a6a6b0); font-size: .7rem; line-height: 1.5; overflow-wrap: anywhere; }
 .poll-status:empty { display: none; }
 .poll-status.is-error { color: #ff8796; }
