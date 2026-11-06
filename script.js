@@ -6,7 +6,7 @@
 
   const pollStyles = document.createElement('link');
   pollStyles.rel = 'stylesheet';
-  pollStyles.href = 'poll.css?v=20261106-send-effects1';
+  pollStyles.href = 'poll.css?v=20261106-clean-feedback1';
   document.head.appendChild(pollStyles);
 })();
 
@@ -232,7 +232,6 @@ document.addEventListener('keydown', function(e) {
       }
       if (submitted) {
         submitButton.classList.add('send-confirmed');
-        burstConfetti(submitButton);
         confirmationTimer = setTimeout(() => submitButton.classList.remove('send-confirmed'), 900);
       }
     });
@@ -302,7 +301,7 @@ document.addEventListener('keydown', function(e) {
           <span class="poll-title"></span>
           <div class="poll-meta"><span class="vote-count"><strong>0</strong> <span class="vote-unit">votes</span></span><span class="poll-percent"></span><em class="leader-badge">Leading</em></div>
         </div></div>
-        <button class="vote" type="button" aria-pressed="false"><svg class="vote-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path/></svg><span class="vote-label">Vote</span><span class="vote-gain" aria-hidden="true">+1</span></button>
+        <button class="vote" type="button" aria-pressed="false"><svg class="vote-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path/></svg><span class="vote-label">Vote</span></button>
       </div>
       <div class="poll-track" aria-hidden="true"><i class="poll-fill"></i></div>`;
     row.querySelector('.vote').addEventListener('click', () => castVote(option.id));
