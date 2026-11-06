@@ -6,7 +6,7 @@
 
   const pollStyles = document.createElement('link');
   pollStyles.rel = 'stylesheet';
-  pollStyles.href = 'poll.css';
+  pollStyles.href = 'poll.css?v=20261106-voting1';
   document.head.appendChild(pollStyles);
 })();
 
@@ -196,125 +196,250 @@ document.addEventListener('keydown', function(e) {
 
   const list = document.getElementById('pick-list');
   if (!list) return;
+  list.classList.add('poll-list');
 
   const summary = document.createElement('div');
   summary.className = 'poll-summary';
-  summary.innerHTML = '<span>LIVE COMMUNITY POLL</span><strong id="poll-leader">Loading picks…</strong>';
+  summary.innerHTML = '<div><span>COMMUNITY VOTES</span><strong id="poll-total">Loading totals…</strong></div><p id="poll-leader">Every pick counts.</p>';
   list.before(summary);
-
-  const existingNote = list.parentElement?.querySelector('.poll-note');
-  if (existingNote) existingNote.remove();
+  const status = document.createElement('p');
+  status.className = 'poll-status';
+  status.setAttribute('role', 'status');
+  status.setAttribute('aria-live', 'polite');
+  status.setAttribute('aria-atomic', 'true');
+  list.after(status);
   const note = document.createElement('p');
   note.className = 'poll-note';
-  note.textContent = 'Shared community totals. One vote per browser — you can change your pick anytime.';
-  list.after(note);
+  note.textContent = 'One vote per browser. Choose another pick to move your vote. Totals update automatically.';
+  status.after(note);
 
   let activeRound = null;
   let options = [];
   let counts = {};
   let selectedOptionId = '';
-
+  let pendingOptionId = '';
+  let resultRequest = 0;
+  let refreshing = false;
+  let totalsStale = false;
+  let memoryVoterToken = '';
+  const rows = new Map();
+  const celebrationTimers = new Map();
+  const number = value => value.toLocaleString('en-US');
+  const selectedKey = () => `claui-vote-${activeRound.id}`;
+  const readStored = key => {
+    try { return localStorage.getItem(key) || ''; } catch (_) { return ''; }
+  };
+  const saveStored = (key, value) => {
+    try { localStorage.setItem(key, value); } catch (_) { /* Voting still works for this visit. */ }
+  };
+  const setStatus = (message = '', isError = false) => {
+    status.textContent = message;
+    status.classList.toggle('is-error', isError);
+  };
   const getVoterToken = () => {
     const key = 'claui-voter-token-v1';
-    let token = localStorage.getItem(key);
+    let token = readStored(key) || memoryVoterToken;
     if (!token) {
-      token = crypto.randomUUID
+      token = typeof crypto !== 'undefined' && crypto.randomUUID
         ? crypto.randomUUID()
         : `${Date.now()}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
-      localStorage.setItem(key, token);
+      saveStored(key, token);
     }
+    memoryVoterToken = token;
     return token;
   };
 
-  const selectedKey = () => activeRound ? `claui-vote-${activeRound.id}` : 'claui-vote';
+  const createRow = option => {
+    const row = document.createElement('li');
+    row.dataset.optionId = option.id;
+    row.innerHTML = `
+      <div class="poll-row">
+        <div class="poll-name"><b class="poll-order" aria-hidden="true"></b><div class="poll-copy">
+          <span class="poll-title"></span>
+          <div class="poll-meta"><span class="vote-count"><strong>0</strong> <span class="vote-unit">votes</span></span><span class="poll-percent"></span><em class="leader-badge">Leading</em></div>
+        </div></div>
+        <button class="vote" type="button" aria-pressed="false"><span class="vote-spinner" aria-hidden="true"></span><svg class="vote-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path/></svg><span class="vote-label">Vote</span><span class="vote-gain" aria-hidden="true">+1</span></button>
+      </div>
+      <div class="poll-track" aria-hidden="true"><i class="poll-fill"></i></div>`;
+    row.querySelector('.vote').addEventListener('click', () => castVote(option.id));
+    return row;
+  };
 
   const renderPoll = () => {
     const total = options.reduce((sum, option) => sum + (counts[option.id] || 0), 0);
     const max = Math.max(0, ...options.map(option => counts[option.id] || 0));
     const leaders = max > 0 ? options.filter(option => (counts[option.id] || 0) === max) : [];
-    const leaderText = document.getElementById('poll-leader');
-    if (leaderText) {
-      leaderText.textContent = !leaders.length
-        ? 'No votes yet'
-        : leaders.length === 1
-          ? `Leading: ${leaders[0].title}`
-          : `Tie: ${leaders.map(option => option.title).join(' · ')}`;
+    summary.querySelector('#poll-total').textContent = `${number(total)} ${total === 1 ? 'vote' : 'votes'} cast`;
+    summary.querySelector('#poll-leader').textContent = !leaders.length
+      ? 'Be the first to choose.'
+      : leaders.length === 1 ? `Leading: ${leaders[0].title}` : `${leaders.length} picks tied for first`;
+    list.setAttribute('aria-busy', String(Boolean(pendingOptionId)));
+    if (!rows.size) list.replaceChildren();
+    for (const [id, row] of rows) {
+      if (!options.some(option => option.id === id)) {
+        row.remove();
+        rows.delete(id);
+      }
     }
-
-    list.innerHTML = '';
     options.forEach((option, index) => {
       const count = counts[option.id] || 0;
       const percent = total ? Math.round((count / total) * 100) : 0;
-      const li = document.createElement('li');
-      li.dataset.optionId = option.id;
-      if (max > 0 && count === max) li.classList.add('is-leading');
-      li.innerHTML = `
-        <div class="poll-row">
-          <div class="poll-name"><b>${index + 1}</b><span></span><em class="leader-badge">Leading</em></div>
-          <div class="poll-actions"><small class="vote-count">${count} ${count === 1 ? 'vote' : 'votes'}</small><button class="vote${selectedOptionId === option.id ? ' voted' : ''}" type="button">${selectedOptionId === option.id ? '✓ Voted' : '＋ Vote'}</button></div>
-        </div>
-        <div class="poll-track"><i class="poll-fill" style="width:${percent}%"></i></div>`;
-      li.querySelector('.poll-name span').textContent = option.title;
-      li.querySelector('.vote').addEventListener('click', () => castVote(option.id));
-      list.appendChild(li);
+      const row = rows.get(option.id) || createRow(option);
+      rows.set(option.id, row);
+      const selected = selectedOptionId === option.id;
+      const pending = pendingOptionId === option.id;
+      row.classList.toggle('is-leading', max > 0 && count === max);
+      row.classList.toggle('is-selected', selected);
+      row.classList.toggle('is-pending', pending);
+      row.querySelector('.poll-order').textContent = String(index + 1).padStart(2, '0');
+      row.querySelector('.poll-title').textContent = option.title;
+      row.querySelector('.vote-count strong').textContent = number(count);
+      row.querySelector('.vote-unit').textContent = count === 1 ? 'vote' : 'votes';
+      row.querySelector('.poll-percent').textContent = `${percent}%`;
+      row.querySelector('.poll-fill').style.width = `${percent}%`;
+      const button = row.querySelector('.vote');
+      button.disabled = Boolean(pendingOptionId);
+      button.classList.toggle('voted', selected);
+      button.setAttribute('aria-pressed', String(selected));
+      button.setAttribute('aria-busy', String(pending));
+      button.setAttribute('aria-label', selected ? `Voted for ${option.title}` : `Vote for ${option.title}`);
+      row.querySelector('.vote-label').textContent = pending ? 'Saving…' : selected ? 'Voted' : 'Vote';
+      row.querySelector('.vote-icon path').setAttribute('d', selected ? 'M5 12l4 4L19 6' : 'M12 5v14M5 12h14');
+      // Preserve focus and bar transitions when shared totals refresh.
+      if (list.children[index] !== row) list.insertBefore(row, list.children[index] || null);
     });
+    if (!options.length) {
+      const empty = document.createElement('li');
+      empty.className = 'poll-empty';
+      empty.textContent = 'No picks open yet. Check back soon.';
+      list.appendChild(empty);
+    }
+  };
+
+  const celebrateVote = optionId => {
+    const row = rows.get(optionId);
+    if (!row) return;
+    clearTimeout(celebrationTimers.get(optionId));
+    row.classList.remove('vote-confirmed');
+    void row.offsetWidth; // Restart confirmation when a viewer moves their vote back.
+    row.classList.add('vote-confirmed');
+    celebrationTimers.set(optionId, setTimeout(() => {
+      row.classList.remove('vote-confirmed');
+      celebrationTimers.delete(optionId);
+    }, 900));
   };
 
   const loadResults = async () => {
     if (!activeRound) return;
-    const results = await api('/rpc/get_poll_results', {
-      method: 'POST',
-      body: JSON.stringify({ p_round_id: activeRound.id })
-    });
+    const request = ++resultRequest;
+    const roundId = activeRound.id;
+    let results;
+    try {
+      results = await api('/rpc/get_poll_results', {
+        method: 'POST', body: JSON.stringify({ p_round_id: roundId })
+      });
+    } catch (error) {
+      if (request !== resultRequest || activeRound?.id !== roundId) return false;
+      throw error;
+    }
+    if (request !== resultRequest || activeRound?.id !== roundId) return false;
     counts = {};
-    (results || []).forEach(row => { counts[row.option_id] = Number(row.votes) || 0; });
+    (results || []).forEach(row => { counts[row.option_id] = Math.max(0, Number(row.votes) || 0); });
     renderPoll();
+    return true;
   };
 
   const castVote = async optionId => {
-    if (!activeRound || selectedOptionId === optionId) return;
-    const button = list.querySelector(`[data-option-id="${optionId}"] .vote`);
-    if (button) {
-      button.disabled = true;
-      button.textContent = 'Voting…';
-    }
+    if (!activeRound || pendingOptionId || selectedOptionId === optionId) return;
+    const option = options.find(item => item.id === optionId);
+    if (!option) return;
+    const button = rows.get(optionId)?.querySelector('.vote');
+    const restoreFocus = document.activeElement === button;
+    pendingOptionId = optionId;
+    ++resultRequest; // Ignore an older refresh arriving while this vote is saving.
+    setStatus('Saving your vote…');
+    renderPoll();
     try {
       await api('/rpc/cast_vote', {
         method: 'POST',
-        body: JSON.stringify({
-          p_round_id: activeRound.id,
-          p_option_id: optionId,
-          p_voter_token: getVoterToken()
-        })
+        body: JSON.stringify({ p_round_id: activeRound.id, p_option_id: optionId, p_voter_token: getVoterToken() })
       });
       selectedOptionId = optionId;
-      localStorage.setItem(selectedKey(), selectedOptionId);
-      await loadResults();
+      saveStored(selectedKey(), selectedOptionId);
+      try {
+        await loadResults();
+        totalsStale = false;
+        setStatus(`Vote saved for ${option.title}.`);
+      } catch (_) {
+        totalsStale = true;
+        setStatus('Your vote is saved. Totals will refresh when the connection returns.');
+      }
+      celebrateVote(optionId);
     } catch (error) {
       console.error('Vote failed.', error);
-      if (button) {
-        button.disabled = false;
-        button.textContent = '＋ Vote';
-      }
+      setStatus('Could not save your vote. Please try again.', true);
+    } finally {
+      pendingOptionId = '';
+      renderPoll();
+      if (restoreFocus && (document.activeElement === document.body || document.activeElement === button)) button.focus({ preventScroll: true });
     }
   };
 
   const loadPoll = async () => {
+    list.setAttribute('aria-busy', 'true');
+    setStatus();
     try {
       const rounds = await api('/poll_rounds?select=id,title&status=eq.active&limit=1');
       activeRound = rounds?.[0] || null;
       if (!activeRound) throw new Error('No active poll round');
-
       options = await api(`/poll_options?select=id,title,sort_order&round_id=eq.${encodeURIComponent(activeRound.id)}&status=eq.active&order=sort_order.asc,created_at.asc`) || [];
-      selectedOptionId = localStorage.getItem(selectedKey()) || '';
+      selectedOptionId = readStored(selectedKey());
+      const title = document.getElementById('poll-title');
+      if (title) title.textContent = activeRound.title;
       await loadResults();
     } catch (error) {
       console.error('Poll failed to load.', error);
-      const leaderText = document.getElementById('poll-leader');
-      if (leaderText) leaderText.textContent = 'Poll temporarily unavailable';
-      note.textContent = 'The community poll could not load right now. Please refresh and try again.';
+      activeRound = null;
+      summary.querySelector('#poll-total').textContent = 'Voting unavailable';
+      summary.querySelector('#poll-leader').textContent = 'Please try again shortly.';
+      list.replaceChildren();
+      rows.clear();
+      const retry = document.createElement('button');
+      retry.className = 'poll-retry';
+      retry.type = 'button';
+      retry.textContent = 'Try loading the poll again';
+      retry.addEventListener('click', () => { retry.disabled = true; loadPoll(); });
+      setStatus('The community poll could not load right now.', true);
+      status.appendChild(retry);
+    } finally {
+      list.setAttribute('aria-busy', 'false');
     }
   };
 
+  const refreshResults = async () => {
+    if (!activeRound || pendingOptionId || refreshing || document.hidden) return;
+    refreshing = true;
+    try {
+      if (!await loadResults()) return;
+      if (totalsStale) setStatus('Vote totals are up to date.');
+      totalsStale = false;
+    } catch (_) {
+      if (!pendingOptionId) {
+        totalsStale = true;
+        setStatus('Showing the last available totals. Reconnecting…');
+      }
+    } finally { refreshing = false; }
+  };
+  setInterval(refreshResults, 15000);
+  document.addEventListener('visibilitychange', refreshResults);
+  window.addEventListener('focus', refreshResults);
+  window.addEventListener('storage', event => {
+    if (!activeRound || pendingOptionId) return;
+    if (event.key === selectedKey() || event.key === null) {
+      selectedOptionId = readStored(selectedKey());
+      renderPoll();
+      refreshResults();
+    }
+  });
   loadPoll();
 })();
